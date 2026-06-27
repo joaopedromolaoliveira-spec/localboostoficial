@@ -33,28 +33,25 @@ export const Route = createFileRoute("/api/public/waha/start")({
           return new Response(`Falha ao iniciar WAHA: ${msg}`, { status: 502, headers: cors });
         }
 
-        // Try to fetch QR and current status (best-effort; some WAHA versions need a tick)
         let qr: string | null = null;
-        let status: string = "scan_qr";
-        try { qr = await getQrImage(cfg, sessionName); } catch { /* not ready yet */ }
+        let statusKey: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "scan_qr";
+        try { qr = await getQrImage(cfg, sessionName); } catch { /* not ready */ }
         try {
           const info = await getSessionInfo(cfg, sessionName);
-          status = mapWahaStatus(info.status);
+          statusKey = mapWahaStatus(info.status);
         } catch { /* ignore */ }
 
-        await supabaseAdmin.from("whatsapp_sessions").upsert(
-          {
-            owner_id: user.id,
-            name: "default",
-            status: status as any,
-            qr_code: qr,
-            session_id: sessionName,
-            last_status_at: new Date().toISOString(),
-          },
-          { onConflict: "owner_id,name" },
-        );
+        const updateRow: {
+          owner_id: string; name: string;
+          status: "scan_qr" | "working" | "connecting" | "failed" | "disconnected";
+          qr_code: string | null; last_status_at: string;
+        } = {
+          owner_id: user.id, name: "default",
+          status: statusKey, qr_code: qr, last_status_at: new Date().toISOString(),
+        };
+        await supabaseAdmin.from("whatsapp_sessions").upsert(updateRow, { onConflict: "owner_id,name" });
 
-        return Response.json({ ok: true, status, has_qr: !!qr }, { headers: cors });
+        return Response.json({ ok: true, status: statusKey, has_qr: !!qr }, { headers: cors });
       },
     },
   },

@@ -45,7 +45,7 @@ export const Route = createFileRoute("/api/public/waha/send")({
           conversation_id: conv.id,
           owner_id: user.id,
           direction: "outbound",
-          status: "sending",
+          status: "queued",
           kind: "text",
           body: text,
           is_ai: !!body.is_ai,

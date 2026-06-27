@@ -1,7 +1,7 @@
 // WAHA HTTP client helpers (https://waha.devlike.pro/)
 // All calls are made server-side from public webhook routes using the per-user config.
 
-export type WahaConfig = { base_url: string; api_key: string | null };
+export type WahaConfig = { base_url: string | null; api_key: string | null };
 
 function authHeaders(cfg: WahaConfig): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };

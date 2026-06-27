@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { stopSession } from "@/lib/waha.server";
+import { stopSession, getEnvWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/waha/stop")({
   server: {
@@ -12,9 +12,8 @@ export const Route = createFileRoute("/api/public/waha/stop")({
         const user = await getUserFromAuthHeader(request);
         if (!user) return new Response("Unauthorized", { status: 401, headers: cors });
 
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (cfg?.base_url) {
+        const cfg = getEnvWahaConfig();
+        if (cfg) {
           try { await stopSession(cfg, sessionNameForUser(user.id)); } catch { /* ignore */ }
         }
         await supabaseAdmin.from("whatsapp_sessions").update({

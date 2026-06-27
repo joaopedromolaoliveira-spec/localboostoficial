@@ -82,6 +82,11 @@ export function AppSidebar() {
                     <Link to="/admin"><Shield className="h-4 w-4" /><span>Painel Admin</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === "/admin/plans"}>
+                    <Link to="/admin/plans"><CreditCard className="h-4 w-4" /><span>Planos & Preços</span></Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

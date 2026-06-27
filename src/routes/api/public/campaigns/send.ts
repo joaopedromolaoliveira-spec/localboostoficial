@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendText, phoneToChatId } from "@/lib/waha.server";
+import { sendText, phoneToChatId, getEnvWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/campaigns/send")({
   server: {
@@ -19,9 +19,8 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
           .from("campaigns").select("*").eq("id", campaign_id).eq("owner_id", user.id).maybeSingle();
         if (!campaign) return new Response("Campanha não encontrada", { status: 404, headers: cors });
 
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (!cfg?.base_url) return new Response("Configure WAHA primeiro", { status: 400, headers: cors });
+        const cfg = getEnvWahaConfig();
+        if (!cfg) return new Response("WhatsApp indisponível.", { status: 503, headers: cors });
 
         // Audience: filter contacts by target_stage if specified, else all
         let query = supabaseAdmin.from("contacts").select("id, phone, name").eq("owner_id", user.id).not("phone", "is", null);

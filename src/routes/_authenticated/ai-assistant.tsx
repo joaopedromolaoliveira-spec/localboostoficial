@@ -131,8 +131,9 @@ function TestPanel() {
   const test = useMutation({
     mutationFn: async () => {
       setOutput("");
-      const res = await fetch("/api/public/ai/test", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const { authedFetch } = await import("@/lib/api-client");
+      const res = await authedFetch("/api/public/ai/test", {
+        method: "POST",
         body: JSON.stringify({ message: input }),
       });
       if (!res.ok) throw new Error(await res.text());

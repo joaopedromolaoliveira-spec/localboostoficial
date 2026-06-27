@@ -10,7 +10,7 @@ function authHeaders(cfg: WahaConfig): Record<string, string> {
 }
 
 function url(cfg: WahaConfig, path: string) {
-  const base = cfg.base_url.replace(/\/+$/, "");
+  const base = (cfg.base_url ?? "").replace(/\/+$/, "");
   return `${base}${path.startsWith("/") ? path : `/${path}`}`;
 }
 

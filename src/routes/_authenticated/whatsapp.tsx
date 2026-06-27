@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { authedFetch } from "@/lib/api-client";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, QrCode, RefreshCw, LogOut, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, QrCode, RefreshCw, LogOut, Smartphone, CheckCircle2, AlertCircle, Phone } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   head: () => ({ meta: [{ title: "WhatsApp — LocalBoost" }] }),
@@ -52,7 +54,7 @@ function SessionCard() {
       const { data } = await supabase.from("whatsapp_sessions").select("*").eq("owner_id", user.id).eq("name", "default").maybeSingle();
       return data;
     },
-    refetchInterval: 3000,
+    refetchInterval: 4000,
   });
 
   useEffect(() => {
@@ -67,21 +69,8 @@ function SessionCard() {
 
   const connect = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Sem sessão");
-      const payload = { owner_id: user.id, name: "default", status: "scan_qr" as const, last_status_at: new Date().toISOString() };
-      const { error } = await supabase.from("whatsapp_sessions").upsert(payload, { onConflict: "owner_id,name" });
-      if (error) throw error;
-      // Trigger WAHA start via server fn
-      const res = await fetch("/api/public/waha/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id }),
-      });
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(txt || "Erro ao iniciar sessão WAHA");
-      }
+      const res = await authedFetch("/api/public/waha/start", { method: "POST", body: "{}" });
+      if (!res.ok) throw new Error(await res.text());
     },
     onSuccess: () => { toast.success("Sessão iniciada. Escaneie o QR Code."); qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); },
     onError: (e: any) => toast.error(e.message),
@@ -89,12 +78,23 @@ function SessionCard() {
 
   const logout = useMutation({
     mutationFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Sem sessão");
-      await fetch("/api/public/waha/stop", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ user_id: user.id }) });
-      await supabase.from("whatsapp_sessions").update({ status: "disconnected", qr_code: null, phone_number: null }).eq("owner_id", user.id).eq("name", "default");
+      const res = await authedFetch("/api/public/waha/stop", { method: "POST", body: "{}" });
+      if (!res.ok) throw new Error(await res.text());
     },
     onSuccess: () => { toast.success("Desconectado"); qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState<string | null>(null);
+  const pair = useMutation({
+    mutationFn: async () => {
+      const res = await authedFetch("/api/public/waha/pair", { method: "POST", body: JSON.stringify({ phone }) });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setCode(data.code);
+    },
+    onError: (e: any) => toast.error(e.message),
   });
 
   const status = session?.status ?? "disconnected";
@@ -112,34 +112,68 @@ function SessionCard() {
           {session?.phone_number && <span className="text-sm text-muted-foreground">{session.phone_number}</span>}
         </div>
 
-        {status === "scan_qr" && session?.qr_code && (
-          <div className="rounded-lg border bg-white p-4 text-center">
-            <img src={session.qr_code} alt="QR Code WhatsApp" className="mx-auto h-64 w-64" />
-            <p className="mt-3 text-sm text-muted-foreground">Abra o WhatsApp &gt; Aparelhos conectados &gt; Conectar um aparelho</p>
-          </div>
-        )}
-        {status === "scan_qr" && !session?.qr_code && (
-          <div className="rounded-lg border border-dashed p-8 text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-            <p className="mt-3 text-sm text-muted-foreground">Gerando QR Code…</p>
-          </div>
+        {status !== "working" && (
+          <Tabs defaultValue="qr">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="qr"><QrCode className="mr-2 h-4 w-4" /> QR Code</TabsTrigger>
+              <TabsTrigger value="phone"><Phone className="mr-2 h-4 w-4" /> Telefone</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="qr" className="space-y-3">
+              {status === "scan_qr" && session?.qr_code ? (
+                <div className="rounded-lg border bg-white p-4 text-center">
+                  <img src={session.qr_code} alt="QR Code WhatsApp" className="mx-auto h-64 w-64" />
+                  <p className="mt-3 text-sm text-muted-foreground">WhatsApp &gt; Aparelhos conectados &gt; Conectar um aparelho</p>
+                </div>
+              ) : status === "scan_qr" ? (
+                <div className="rounded-lg border border-dashed p-8 text-center">
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+                  <p className="mt-3 text-sm text-muted-foreground">Gerando QR Code…</p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">Clique em Conectar para gerar o QR Code.</p>
+              )}
+              <Button onClick={() => connect.mutate()} disabled={connect.isPending} className="w-full gap-2 shadow-glow">
+                {connect.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
+                {status === "scan_qr" ? "Atualizar QR" : "Conectar"}
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="phone" className="space-y-3">
+              <p className="text-xs text-muted-foreground">Informe o número com DDI (ex: 5511999998888). Inicie a conexão antes de pedir o código.</p>
+              <div>
+                <Label>Número de telefone</Label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="5511999998888" />
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => connect.mutate()} disabled={connect.isPending}>
+                  {connect.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Iniciar sessão"}
+                </Button>
+                <Button onClick={() => pair.mutate()} disabled={pair.isPending || phone.length < 10} className="flex-1 gap-2 shadow-glow">
+                  {pair.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Phone className="h-4 w-4" />}
+                  Pedir código
+                </Button>
+              </div>
+              {code && (
+                <div className="rounded-lg border bg-muted/40 p-4 text-center">
+                  <p className="text-xs text-muted-foreground">Digite no WhatsApp &gt; Aparelhos conectados &gt; Conectar com número:</p>
+                  <p className="mt-2 text-3xl font-bold tracking-widest">{code}</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         )}
 
-        <div className="flex gap-2">
-          {status !== "working" ? (
-            <Button onClick={() => connect.mutate()} disabled={connect.isPending} className="gap-2 shadow-glow">
-              {connect.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
-              {status === "scan_qr" ? "Atualizar QR" : "Conectar"}
-            </Button>
-          ) : (
+        {status === "working" && (
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => logout.mutate()} disabled={logout.isPending} className="gap-2">
               <LogOut className="h-4 w-4" /> Desconectar
             </Button>
-          )}
-          <Button variant="ghost" onClick={() => qc.invalidateQueries({ queryKey: ["whatsapp-session"] })}>
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
+            <Button variant="ghost" onClick={() => qc.invalidateQueries({ queryKey: ["whatsapp-session"] })}>
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -174,13 +208,13 @@ function WahaConfigCard() {
     <Card className="shadow-card">
       <CardHeader><CardTitle>Configuração WAHA</CardTitle></CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">Aponte para a sua instância WAHA self-hosted. O webhook é configurado automaticamente.</p>
+        <p className="text-sm text-muted-foreground">Aponte para a sua instância WAHA self-hosted. O webhook é configurado automaticamente na sessão.</p>
         <div className="space-y-2"><Label>URL base WAHA</Label>
           <Input placeholder="https://waha.minhaempresa.com" value={form.base_url} onChange={(e) => setForm({ ...form, base_url: e.target.value })} /></div>
         <div className="space-y-2"><Label>API Key</Label>
           <Input type="password" placeholder="sua-api-key" value={form.api_key} onChange={(e) => setForm({ ...form, api_key: e.target.value })} /></div>
         <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-          <strong>Webhook URL:</strong><br />
+          <strong>Webhook URL (registrado automaticamente):</strong><br />
           <code className="break-all">{typeof window !== "undefined" ? window.location.origin : ""}/api/public/webhooks/waha</code>
         </div>
         <Button onClick={() => save.mutate()} disabled={save.isPending}>

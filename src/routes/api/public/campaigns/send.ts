@@ -23,19 +23,18 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
           .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
         if (!cfg?.base_url) return new Response("Configure WAHA primeiro", { status: 400, headers: cors });
 
-        // Audience: filter contacts by stage if specified, else all
+        // Audience: filter contacts by target_stage if specified, else all
         let query = supabaseAdmin.from("contacts").select("id, phone, name").eq("owner_id", user.id).not("phone", "is", null);
-        const audience = (campaign as { audience?: { stage?: string } }).audience;
-        if (audience?.stage) query = query.eq("stage", audience.stage as any);
+        if (campaign.target_stage) query = query.eq("stage", campaign.target_stage);
         const { data: contacts } = await query;
         const list = contacts ?? [];
 
         await supabaseAdmin.from("campaigns").update({
-          status: "sending", started_at: new Date().toISOString(), total_recipients: list.length,
+          status: "sending", total_count: list.length,
         }).eq("id", campaign_id);
 
         const sessionName = sessionNameForUser(user.id);
-        const template = (campaign as { message: string }).message ?? "";
+        const template = campaign.message ?? "";
         let sent = 0, failed = 0;
 
         // Best-effort sequential send with light throttle
@@ -51,8 +50,7 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
         }
 
         await supabaseAdmin.from("campaigns").update({
-          status: "done", finished_at: new Date().toISOString(),
-          sent_count: sent, failed_count: failed,
+          status: "done", sent_count: sent, failed_count: failed,
         }).eq("id", campaign_id);
 
         return Response.json({ ok: true, sent, failed }, { headers: cors });

@@ -25,6 +25,12 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAutomationsRouteImport } from './routes/_authenticated/automations'
 import { Route as AuthenticatedAiAssistantRouteImport } from './routes/_authenticated/ai-assistant'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as ApiPublicWebhooksWahaRouteImport } from './routes/api/public/webhooks/waha'
+import { Route as ApiPublicWahaStopRouteImport } from './routes/api/public/waha/stop'
+import { Route as ApiPublicWahaStartRouteImport } from './routes/api/public/waha/start'
+import { Route as ApiPublicWahaSendRouteImport } from './routes/api/public/waha/send'
+import { Route as ApiPublicWahaPairRouteImport } from './routes/api/public/waha/pair'
+import { Route as ApiPublicAiTestRouteImport } from './routes/api/public/ai/test'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -108,6 +114,36 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiPublicWebhooksWahaRoute = ApiPublicWebhooksWahaRouteImport.update({
+  id: '/api/public/webhooks/waha',
+  path: '/api/public/webhooks/waha',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWahaStopRoute = ApiPublicWahaStopRouteImport.update({
+  id: '/api/public/waha/stop',
+  path: '/api/public/waha/stop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWahaStartRoute = ApiPublicWahaStartRouteImport.update({
+  id: '/api/public/waha/start',
+  path: '/api/public/waha/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWahaSendRoute = ApiPublicWahaSendRouteImport.update({
+  id: '/api/public/waha/send',
+  path: '/api/public/waha/send',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWahaPairRoute = ApiPublicWahaPairRouteImport.update({
+  id: '/api/public/waha/pair',
+  path: '/api/public/waha/pair',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAiTestRoute = ApiPublicAiTestRouteImport.update({
+  id: '/api/public/ai/test',
+  path: '/api/public/ai/test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -125,6 +161,12 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/ai/test': typeof ApiPublicAiTestRoute
+  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
+  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
+  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
+  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
+  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -142,6 +184,12 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/ai/test': typeof ApiPublicAiTestRoute
+  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
+  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
+  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
+  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
+  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -161,6 +209,12 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/api/public/ai/test': typeof ApiPublicAiTestRoute
+  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
+  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
+  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
+  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
+  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,6 +234,12 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/whatsapp'
+    | '/api/public/ai/test'
+    | '/api/public/waha/pair'
+    | '/api/public/waha/send'
+    | '/api/public/waha/start'
+    | '/api/public/waha/stop'
+    | '/api/public/webhooks/waha'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -197,6 +257,12 @@ export interface FileRouteTypes {
     | '/reports'
     | '/settings'
     | '/whatsapp'
+    | '/api/public/ai/test'
+    | '/api/public/waha/pair'
+    | '/api/public/waha/send'
+    | '/api/public/waha/start'
+    | '/api/public/waha/stop'
+    | '/api/public/webhooks/waha'
   id:
     | '__root__'
     | '/'
@@ -215,6 +281,12 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/settings'
     | '/_authenticated/whatsapp'
+    | '/api/public/ai/test'
+    | '/api/public/waha/pair'
+    | '/api/public/waha/send'
+    | '/api/public/waha/start'
+    | '/api/public/waha/stop'
+    | '/api/public/webhooks/waha'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -223,6 +295,12 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicAiTestRoute: typeof ApiPublicAiTestRoute
+  ApiPublicWahaPairRoute: typeof ApiPublicWahaPairRoute
+  ApiPublicWahaSendRoute: typeof ApiPublicWahaSendRoute
+  ApiPublicWahaStartRoute: typeof ApiPublicWahaStartRoute
+  ApiPublicWahaStopRoute: typeof ApiPublicWahaStopRoute
+  ApiPublicWebhooksWahaRoute: typeof ApiPublicWebhooksWahaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -339,6 +417,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/webhooks/waha': {
+      id: '/api/public/webhooks/waha'
+      path: '/api/public/webhooks/waha'
+      fullPath: '/api/public/webhooks/waha'
+      preLoaderRoute: typeof ApiPublicWebhooksWahaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/waha/stop': {
+      id: '/api/public/waha/stop'
+      path: '/api/public/waha/stop'
+      fullPath: '/api/public/waha/stop'
+      preLoaderRoute: typeof ApiPublicWahaStopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/waha/start': {
+      id: '/api/public/waha/start'
+      path: '/api/public/waha/start'
+      fullPath: '/api/public/waha/start'
+      preLoaderRoute: typeof ApiPublicWahaStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/waha/send': {
+      id: '/api/public/waha/send'
+      path: '/api/public/waha/send'
+      fullPath: '/api/public/waha/send'
+      preLoaderRoute: typeof ApiPublicWahaSendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/waha/pair': {
+      id: '/api/public/waha/pair'
+      path: '/api/public/waha/pair'
+      fullPath: '/api/public/waha/pair'
+      preLoaderRoute: typeof ApiPublicWahaPairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/ai/test': {
+      id: '/api/public/ai/test'
+      path: '/api/public/ai/test'
+      fullPath: '/api/public/ai/test'
+      preLoaderRoute: typeof ApiPublicAiTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -379,6 +499,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicAiTestRoute: ApiPublicAiTestRoute,
+  ApiPublicWahaPairRoute: ApiPublicWahaPairRoute,
+  ApiPublicWahaSendRoute: ApiPublicWahaSendRoute,
+  ApiPublicWahaStartRoute: ApiPublicWahaStartRoute,
+  ApiPublicWahaStopRoute: ApiPublicWahaStopRoute,
+  ApiPublicWebhooksWahaRoute: ApiPublicWebhooksWahaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

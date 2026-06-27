@@ -56,13 +56,13 @@ function BillingPage() {
             <h2 className="mb-4 text-xl font-bold">Escolha um plano</h2>
             <div className="grid gap-4 md:grid-cols-3">
               {PLANS.map((p) => (
-                <Card key={p.id} className={`shadow-card ${p.featured ? "border-primary ring-2 ring-primary/30" : ""}`}>
+                <Card key={p.id} className={`shadow-card ${p.highlight ? "border-primary ring-2 ring-primary/30" : ""}`}>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       {p.name}
-                      {p.featured && <Badge className="bg-primary">Recomendado</Badge>}
+                      {p.highlight && <Badge className="bg-primary">Recomendado</Badge>}
                     </CardTitle>
-                    <div className="text-3xl font-bold">{brl(p.priceCents)}<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
+                    <div className="text-3xl font-bold">{brl(p.price * 100)}<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <ul className="space-y-2 text-sm">
@@ -71,8 +71,8 @@ function BillingPage() {
                       ))}
                     </ul>
                     <Button
-                      className={`w-full ${p.featured ? "shadow-glow" : ""}`}
-                      variant={p.featured ? "default" : "outline"}
+                      className={`w-full ${p.highlight ? "shadow-glow" : ""}`}
+                      variant={p.highlight ? "default" : "outline"}
                       disabled={sub?.plan === p.id}
                       onClick={() => toast.info("Pagamentos com Stripe — em ativação. Fale com nosso time.")}
                     >

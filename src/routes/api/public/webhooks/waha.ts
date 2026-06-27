@@ -170,7 +170,7 @@ async function dispatchOutbound(ownerId: string, convId: string, text: string, i
   const { sendText, phoneToChatId } = await import("@/lib/waha.server");
 
   const { data: inserted } = await supabaseAdmin.from("messages").insert({
-    conversation_id: convId, owner_id: ownerId, direction: "outbound", status: "sending",
+    conversation_id: convId, owner_id: ownerId, direction: "outbound", status: "queued",
     kind: "text", body: text, is_ai: isAi,
   }).select("id").single();
 

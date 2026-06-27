@@ -20,6 +20,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
 import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
+import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedAutomationsRouteImport } from './routes/_authenticated/automations'
 import { Route as AuthenticatedAiAssistantRouteImport } from './routes/_authenticated/ai-assistant'
 
@@ -78,6 +79,11 @@ const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
   path: '/campaigns',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAutomationsRoute =
   AuthenticatedAutomationsRouteImport.update({
     id: '/automations',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/ai-assistant': typeof AuthenticatedAiAssistantRoute
   '/automations': typeof AuthenticatedAutomationsRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/conversations': typeof AuthenticatedConversationsRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/ai-assistant': typeof AuthenticatedAiAssistantRoute
   '/automations': typeof AuthenticatedAutomationsRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/campaigns': typeof AuthenticatedCampaignsRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/conversations': typeof AuthenticatedConversationsRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/ai-assistant': typeof AuthenticatedAiAssistantRoute
   '/_authenticated/automations': typeof AuthenticatedAutomationsRoute
+  '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
   '/_authenticated/contacts': typeof AuthenticatedContactsRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/ai-assistant'
     | '/automations'
+    | '/billing'
     | '/campaigns'
     | '/contacts'
     | '/conversations'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/ai-assistant'
     | '/automations'
+    | '/billing'
     | '/campaigns'
     | '/contacts'
     | '/conversations'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/ai-assistant'
     | '/_authenticated/automations'
+    | '/_authenticated/billing'
     | '/_authenticated/campaigns'
     | '/_authenticated/contacts'
     | '/_authenticated/conversations'
@@ -268,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCampaignsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/billing': {
+      id: '/_authenticated/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/automations': {
       id: '/_authenticated/automations'
       path: '/automations'
@@ -288,6 +307,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiAssistantRoute: typeof AuthenticatedAiAssistantRoute
   AuthenticatedAutomationsRoute: typeof AuthenticatedAutomationsRoute
+  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
   AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
@@ -299,6 +319,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiAssistantRoute: AuthenticatedAiAssistantRoute,
   AuthenticatedAutomationsRoute: AuthenticatedAutomationsRoute,
+  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
   AuthenticatedContactsRoute: AuthenticatedContactsRoute,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,

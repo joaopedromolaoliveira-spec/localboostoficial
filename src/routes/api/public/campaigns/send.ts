@@ -31,7 +31,7 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
         const list = contacts ?? [];
 
         await supabaseAdmin.from("campaigns").update({
-          status: "running", started_at: new Date().toISOString(), total_recipients: list.length,
+          status: "sending", started_at: new Date().toISOString(), total_recipients: list.length,
         }).eq("id", campaign_id);
 
         const sessionName = sessionNameForUser(user.id);
@@ -51,7 +51,7 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
         }
 
         await supabaseAdmin.from("campaigns").update({
-          status: "completed", finished_at: new Date().toISOString(),
+          status: "done", finished_at: new Date().toISOString(),
           sent_count: sent, failed_count: failed,
         }).eq("id", campaign_id);
 

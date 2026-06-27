@@ -16,8 +16,8 @@ export function TrialBanner() {
     },
   });
 
-  if (!sub || sub.status !== "trialing" || !sub.trial_ends_at) return null;
-  const daysLeft = Math.max(0, Math.ceil((new Date(sub.trial_ends_at).getTime() - Date.now()) / 86400000));
+  if (!sub || sub.status !== "trialing" || !sub.current_period_end) return null;
+  const daysLeft = Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000));
 
   return (
     <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-transparent">

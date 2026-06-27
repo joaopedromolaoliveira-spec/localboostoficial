@@ -14,6 +14,323 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliates: {
+        Row: {
+          code: string
+          commission_pct: number
+          created_at: string
+          earnings_cents: number
+          id: string
+          paid_cents: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          commission_pct?: number
+          created_at?: string
+          earnings_cents?: number
+          id?: string
+          paid_cents?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          commission_pct?: number
+          created_at?: string
+          earnings_cents?: number
+          id?: string
+          paid_cents?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_assistants: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          knowledge: string | null
+          model: string
+          name: string
+          owner_id: string
+          provider: Database["public"]["Enums"]["ai_provider"]
+          system_prompt: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          knowledge?: string | null
+          model?: string
+          name?: string
+          owner_id: string
+          provider?: Database["public"]["Enums"]["ai_provider"]
+          system_prompt?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          knowledge?: string | null
+          model?: string
+          name?: string
+          owner_id?: string
+          provider?: Database["public"]["Enums"]["ai_provider"]
+          system_prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      automations: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          name: string
+          owner_id: string
+          runs_count: number
+          steps: Json
+          trigger_config: Json
+          trigger_type: Database["public"]["Enums"]["automation_trigger"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name: string
+          owner_id: string
+          runs_count?: number
+          steps?: Json
+          trigger_config?: Json
+          trigger_type: Database["public"]["Enums"]["automation_trigger"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          name?: string
+          owner_id?: string
+          runs_count?: number
+          steps?: Json
+          trigger_config?: Json
+          trigger_type?: Database["public"]["Enums"]["automation_trigger"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          created_at: string
+          failed_count: number
+          id: string
+          media_url: string | null
+          message: string
+          name: string
+          owner_id: string
+          scheduled_at: string | null
+          sent_count: number
+          status: Database["public"]["Enums"]["campaign_status"]
+          target_stage: Database["public"]["Enums"]["contact_stage"] | null
+          target_tags: string[]
+          total_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          failed_count?: number
+          id?: string
+          media_url?: string | null
+          message: string
+          name: string
+          owner_id: string
+          scheduled_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_stage?: Database["public"]["Enums"]["contact_stage"] | null
+          target_tags?: string[]
+          total_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          failed_count?: number
+          id?: string
+          media_url?: string | null
+          message?: string
+          name?: string
+          owner_id?: string
+          scheduled_at?: string | null
+          sent_count?: number
+          status?: Database["public"]["Enums"]["campaign_status"]
+          target_stage?: Database["public"]["Enums"]["contact_stage"] | null
+          target_tags?: string[]
+          total_count?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          last_contacted_at: string | null
+          name: string | null
+          notes: string | null
+          owner_id: string
+          phone: string
+          stage: Database["public"]["Enums"]["contact_stage"]
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_id: string
+          phone: string
+          stage?: Database["public"]["Enums"]["contact_stage"]
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          last_contacted_at?: string | null
+          name?: string | null
+          notes?: string | null
+          owner_id?: string
+          phone?: string
+          stage?: Database["public"]["Enums"]["contact_stage"]
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conversations: {
+        Row: {
+          ai_enabled: boolean
+          assigned_to: string | null
+          contact_id: string
+          created_at: string
+          id: string
+          last_message_at: string | null
+          last_message_preview: string | null
+          owner_id: string
+          session_id: string | null
+          status: Database["public"]["Enums"]["conversation_status"]
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          ai_enabled?: boolean
+          assigned_to?: string | null
+          contact_id: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          owner_id: string
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["conversation_status"]
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          ai_enabled?: boolean
+          assigned_to?: string | null
+          contact_id?: string
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          owner_id?: string
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["conversation_status"]
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "whatsapp_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          direction: Database["public"]["Enums"]["message_direction"]
+          id: string
+          is_ai: boolean
+          kind: Database["public"]["Enums"]["message_kind"]
+          media_url: string | null
+          owner_id: string
+          sent_by: string | null
+          status: Database["public"]["Enums"]["message_status"]
+          waha_id: string | null
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          direction: Database["public"]["Enums"]["message_direction"]
+          id?: string
+          is_ai?: boolean
+          kind?: Database["public"]["Enums"]["message_kind"]
+          media_url?: string | null
+          owner_id: string
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["message_status"]
+          waha_id?: string | null
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          direction?: Database["public"]["Enums"]["message_direction"]
+          id?: string
+          is_ai?: boolean
+          kind?: Database["public"]["Enums"]["message_kind"]
+          media_url?: string | null
+          owner_id?: string
+          sent_by?: string | null
+          status?: Database["public"]["Enums"]["message_status"]
+          waha_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -89,6 +406,39 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          accepted_at: string | null
+          email: string
+          id: string
+          invited_at: string
+          member_user_id: string | null
+          name: string | null
+          owner_id: string
+          role: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          email: string
+          id?: string
+          invited_at?: string
+          member_user_id?: string | null
+          name?: string | null
+          owner_id: string
+          role?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          email?: string
+          id?: string
+          invited_at?: string
+          member_user_id?: string | null
+          name?: string | null
+          owner_id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -110,6 +460,72 @@ export type Database = {
         }
         Relationships: []
       }
+      waha_config: {
+        Row: {
+          api_key: string | null
+          base_url: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          last_status_at: string
+          name: string
+          owner_id: string
+          phone_number: string | null
+          qr_code: string | null
+          status: Database["public"]["Enums"]["waha_status"]
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_status_at?: string
+          name?: string
+          owner_id: string
+          phone_number?: string | null
+          qr_code?: string | null
+          status?: Database["public"]["Enums"]["waha_status"]
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_status_at?: string
+          name?: string
+          owner_id?: string
+          phone_number?: string | null
+          qr_code?: string | null
+          status?: Database["public"]["Enums"]["waha_status"]
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -124,7 +540,34 @@ export type Database = {
       }
     }
     Enums: {
+      ai_provider: "lovable" | "openai" | "gemini"
       app_role: "admin" | "manager" | "partner" | "user"
+      automation_trigger:
+        | "keyword"
+        | "first_message"
+        | "tag_added"
+        | "schedule"
+        | "webhook"
+      campaign_status:
+        | "draft"
+        | "scheduled"
+        | "sending"
+        | "done"
+        | "canceled"
+        | "failed"
+      contact_stage: "lead" | "qualified" | "customer" | "lost"
+      conversation_status: "open" | "pending" | "resolved" | "snoozed"
+      message_direction: "inbound" | "outbound"
+      message_kind:
+        | "text"
+        | "image"
+        | "audio"
+        | "video"
+        | "document"
+        | "location"
+        | "template"
+        | "system"
+      message_status: "queued" | "sent" | "delivered" | "read" | "failed"
       plan_tier: "trial" | "starter" | "pro" | "business"
       subscription_status:
         | "trialing"
@@ -132,6 +575,12 @@ export type Database = {
         | "past_due"
         | "canceled"
         | "incomplete"
+      waha_status:
+        | "disconnected"
+        | "connecting"
+        | "scan_qr"
+        | "working"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -259,7 +708,37 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ai_provider: ["lovable", "openai", "gemini"],
       app_role: ["admin", "manager", "partner", "user"],
+      automation_trigger: [
+        "keyword",
+        "first_message",
+        "tag_added",
+        "schedule",
+        "webhook",
+      ],
+      campaign_status: [
+        "draft",
+        "scheduled",
+        "sending",
+        "done",
+        "canceled",
+        "failed",
+      ],
+      contact_stage: ["lead", "qualified", "customer", "lost"],
+      conversation_status: ["open", "pending", "resolved", "snoozed"],
+      message_direction: ["inbound", "outbound"],
+      message_kind: [
+        "text",
+        "image",
+        "audio",
+        "video",
+        "document",
+        "location",
+        "template",
+        "system",
+      ],
+      message_status: ["queued", "sent", "delivered", "read", "failed"],
       plan_tier: ["trial", "starter", "pro", "business"],
       subscription_status: [
         "trialing",
@@ -267,6 +746,13 @@ export const Constants = {
         "past_due",
         "canceled",
         "incomplete",
+      ],
+      waha_status: [
+        "disconnected",
+        "connecting",
+        "scan_qr",
+        "working",
+        "failed",
       ],
     },
   },

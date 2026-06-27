@@ -331,51 +331,6 @@ export type Database = {
           },
         ]
       }
-      plan_catalog: {
-        Row: {
-          created_at: string
-          currency: string
-          description: string | null
-          features: Json
-          highlight: boolean
-          id: string
-          is_active: boolean
-          name: string
-          price_cents: number
-          sort_order: number
-          stripe_price_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          highlight?: boolean
-          id: string
-          is_active?: boolean
-          name: string
-          price_cents?: number
-          sort_order?: number
-          stripe_price_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          highlight?: boolean
-          id?: string
-          is_active?: boolean
-          name?: string
-          price_cents?: number
-          sort_order?: number
-          stripe_price_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Loader2, CreditCard } from "lucide-react";
+import { PLANS } from "@/constants/plans";
 import { brl } from "@/lib/format";
 import { toast } from "sonner";
 
@@ -14,11 +15,6 @@ export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({ meta: [{ title: "Assinatura — LocalBoost" }] }),
   component: BillingPage,
 });
-
-type Plan = {
-  id: string; name: string; description: string | null; price_cents: number;
-  features: any; highlight: boolean; is_active: boolean; sort_order: number;
-};
 
 function BillingPage() {
   const { data: sub, isLoading } = useQuery({
@@ -28,14 +24,6 @@ function BillingPage() {
       if (!user) return null;
       const { data } = await supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle();
       return data;
-    },
-  });
-
-  const { data: plans } = useQuery({
-    queryKey: ["plan-catalog"],
-    queryFn: async () => {
-      const { data } = await supabase.from("plan_catalog").select("*").eq("is_active", true).order("sort_order");
-      return (data ?? []) as Plan[];
     },
   });
 
@@ -67,36 +55,32 @@ function BillingPage() {
           <div>
             <h2 className="mb-4 text-xl font-bold">Escolha um plano</h2>
             <div className="grid gap-4 md:grid-cols-3">
-              {(plans ?? []).map((p) => {
-                const features: string[] = Array.isArray(p.features) ? p.features : [];
-                return (
-                  <Card key={p.id} className={`shadow-card ${p.highlight ? "border-primary ring-2 ring-primary/30" : ""}`}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        {p.name}
-                        {p.highlight && <Badge className="bg-primary">Recomendado</Badge>}
-                      </CardTitle>
-                      <div className="text-3xl font-bold">{brl(p.price_cents)}<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
-                      {p.description && <p className="text-sm text-muted-foreground">{p.description}</p>}
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <ul className="space-y-2 text-sm">
-                        {features.map((f) => (
-                          <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 shrink-0 text-primary" /> {f}</li>
-                        ))}
-                      </ul>
-                      <Button
-                        className={`w-full ${p.highlight ? "shadow-glow" : ""}`}
-                        variant={p.highlight ? "default" : "outline"}
-                        disabled={sub?.plan === p.id}
-                        onClick={() => toast.info("Checkout Stripe sendo ativado. Tente novamente em alguns minutos.")}
-                      >
-                        {sub?.plan === p.id ? "Plano atual" : "Assinar"}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+              {PLANS.map((p) => (
+                <Card key={p.id} className={`shadow-card ${p.highlight ? "border-primary ring-2 ring-primary/30" : ""}`}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      {p.name}
+                      {p.highlight && <Badge className="bg-primary">Recomendado</Badge>}
+                    </CardTitle>
+                    <div className="text-3xl font-bold">{brl(p.price * 100)}<span className="text-sm font-normal text-muted-foreground">/mês</span></div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <ul className="space-y-2 text-sm">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex items-start gap-2"><Check className="h-4 w-4 shrink-0 text-primary" /> {f}</li>
+                      ))}
+                    </ul>
+                    <Button
+                      className={`w-full ${p.highlight ? "shadow-glow" : ""}`}
+                      variant={p.highlight ? "default" : "outline"}
+                      disabled={sub?.plan === p.id}
+                      onClick={() => toast.info("Pagamentos com Stripe — em ativação. Fale com nosso time.")}
+                    >
+                      {sub?.plan === p.id ? "Plano atual" : "Assinar"}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>

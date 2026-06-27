@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { startSession, getQrImage, getSessionInfo, mapWahaStatus } from "@/lib/waha.server";
+import { startSession, getQrImage, getSessionInfo, mapWahaStatus, chatIdToPhone, getEnvWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/waha/start")({
   server: {
@@ -12,44 +12,50 @@ export const Route = createFileRoute("/api/public/waha/start")({
         const user = await getUserFromAuthHeader(request);
         if (!user) return new Response("Unauthorized", { status: 401, headers: cors });
 
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (!cfg?.base_url) {
-          return new Response("Configure a URL do WAHA em WhatsApp > Configuração.", { status: 400, headers: cors });
-        }
+        const cfg = getEnvWahaConfig();
+        if (!cfg) return new Response("WhatsApp indisponível no momento. Tente novamente em instantes.", { status: 503, headers: cors });
 
         const sessionName = sessionNameForUser(user.id);
         const origin = new URL(request.url).origin;
         const webhookUrl = `${origin}/api/public/webhooks/waha`;
 
+        // Mark connecting immediately for snappy UI
+        await supabaseAdmin.from("whatsapp_sessions").upsert(
+          { owner_id: user.id, name: "default", status: "connecting", last_status_at: new Date().toISOString() },
+          { onConflict: "owner_id,name" },
+        );
+
         try {
           await startSession(cfg, sessionName, webhookUrl);
         } catch (e) {
-          const msg = (e as Error).message;
           await supabaseAdmin.from("whatsapp_sessions").upsert(
             { owner_id: user.id, name: "default", status: "failed", last_status_at: new Date().toISOString() },
             { onConflict: "owner_id,name" },
           );
-          return new Response(`Falha ao iniciar WAHA: ${msg}`, { status: 502, headers: cors });
+          return new Response(`Falha ao iniciar sessão: ${(e as Error).message}`, { status: 502, headers: cors });
         }
 
         let qr: string | null = null;
         let statusKey: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "scan_qr";
-        try { qr = await getQrImage(cfg, sessionName); } catch { /* not ready */ }
+        let phone: string | null = null;
         try {
           const info = await getSessionInfo(cfg, sessionName);
           statusKey = mapWahaStatus(info.status);
+          if (info.me?.id) phone = chatIdToPhone(info.me.id);
         } catch { /* ignore */ }
 
-        const updateRow: {
-          owner_id: string; name: string;
-          status: "scan_qr" | "working" | "connecting" | "failed" | "disconnected";
-          qr_code: string | null; last_status_at: string;
-        } = {
-          owner_id: user.id, name: "default",
-          status: statusKey, qr_code: qr, last_status_at: new Date().toISOString(),
-        };
-        await supabaseAdmin.from("whatsapp_sessions").upsert(updateRow, { onConflict: "owner_id,name" });
+        if (statusKey !== "working") {
+          try { qr = await getQrImage(cfg, sessionName); } catch { /* QR not ready yet */ }
+        }
+
+        await supabaseAdmin.from("whatsapp_sessions").upsert(
+          {
+            owner_id: user.id, name: "default",
+            status: statusKey, qr_code: qr, phone_number: phone,
+            last_status_at: new Date().toISOString(),
+          },
+          { onConflict: "owner_id,name" },
+        );
 
         return Response.json({ ok: true, status: statusKey, has_qr: !!qr }, { headers: cors });
       },

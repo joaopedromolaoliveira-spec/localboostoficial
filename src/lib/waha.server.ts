@@ -1,7 +1,14 @@
 // WAHA HTTP client helpers (https://waha.devlike.pro/)
-// All calls are made server-side from public webhook routes using the per-user config.
+// Credentials live in server-side env vars only — never exposed to the browser.
 
 export type WahaConfig = { base_url: string | null; api_key: string | null };
+
+export function getEnvWahaConfig(): WahaConfig | null {
+  const base_url = process.env.WAHA_BASE_URL ?? null;
+  const api_key = process.env.WAHA_API_KEY ?? null;
+  if (!base_url) return null;
+  return { base_url, api_key };
+}
 
 function authHeaders(cfg: WahaConfig): Record<string, string> {
   const h: Record<string, string> = { "Content-Type": "application/json" };

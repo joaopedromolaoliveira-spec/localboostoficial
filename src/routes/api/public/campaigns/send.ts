@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendText, phoneToChatId } from "@/lib/waha.server";
+import { sendText, phoneToChatId, getEnvWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/campaigns/send")({
   server: {

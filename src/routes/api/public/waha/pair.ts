@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { requestPairingCode } from "@/lib/waha.server";
+import { requestPairingCode, getEnvWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/waha/pair")({
   server: {
@@ -16,9 +15,8 @@ export const Route = createFileRoute("/api/public/waha/pair")({
         const phone = (body.phone ?? "").replace(/\D/g, "");
         if (phone.length < 10) return new Response("Telefone inválido", { status: 400, headers: cors });
 
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (!cfg?.base_url) return new Response("Configure WAHA primeiro", { status: 400, headers: cors });
+        const cfg = getEnvWahaConfig();
+        if (!cfg) return new Response("WhatsApp indisponível no momento.", { status: 503, headers: cors });
 
         try {
           const result = await requestPairingCode(cfg, sessionNameForUser(user.id), phone);

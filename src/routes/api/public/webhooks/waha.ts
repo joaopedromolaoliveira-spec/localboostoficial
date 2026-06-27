@@ -22,11 +22,14 @@ export const Route = createFileRoute("/api/public/webhooks/waha")({
         if (!body || !body.session) return new Response("ok", { headers: cors });
 
         const sessionName = body.session;
-        // Recover owner: uXXXXXXXX... (UUID without dashes). Find by whatsapp_sessions.session_id
+        // Owner is encoded in the session name: u + UUID without dashes (32 hex chars).
+        const m = /^u([0-9a-f]{32})$/i.exec(sessionName);
+        if (!m) return new Response("ok", { headers: cors });
+        const hex = m[1];
+        const ownerId = `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
         const { data: sess } = await supabaseAdmin
-          .from("whatsapp_sessions").select("owner_id").eq("session_id", sessionName).maybeSingle();
+          .from("whatsapp_sessions").select("owner_id").eq("owner_id", ownerId).eq("name", "default").maybeSingle();
         if (!sess) return new Response("ok", { headers: cors });
-        const ownerId = sess.owner_id;
 
         const ev = body.event ?? "";
 
@@ -87,7 +90,7 @@ export const Route = createFileRoute("/api/public/webhooks/waha")({
             status: "delivered",
             kind: p.hasMedia ? "image" : "text",
             body: text,
-            wa_message_id: p.id ?? null,
+            waha_id: p.id ?? null,
           });
           await supabaseAdmin.from("conversations").update({
             last_message_at: new Date().toISOString(),

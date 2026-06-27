@@ -39,7 +39,8 @@ function CampaignsPage() {
 
   const send = useMutation({
     mutationFn: async (id: string) => {
-      const res = await fetch("/api/public/campaigns/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ campaign_id: id }) });
+      const { authedFetch } = await import("@/lib/api-client");
+      const res = await authedFetch("/api/public/campaigns/send", { method: "POST", body: JSON.stringify({ campaign_id: id }) });
       if (!res.ok) throw new Error(await res.text());
     },
     onSuccess: () => { toast.success("Disparo iniciado"); qc.invalidateQueries({ queryKey: ["campaigns"] }); },

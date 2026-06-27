@@ -141,8 +141,9 @@ function ChatPanel({ conversationId }: { conversationId: string }) {
     mutationFn: async () => {
       const body = text.trim();
       if (!body) return;
-      const res = await fetch("/api/public/waha/send", {
-        method: "POST", headers: { "Content-Type": "application/json" },
+      const { authedFetch } = await import("@/lib/api-client");
+      const res = await authedFetch("/api/public/waha/send", {
+        method: "POST",
         body: JSON.stringify({ conversation_id: conversationId, text: body }),
       });
       if (!res.ok) throw new Error(await res.text());

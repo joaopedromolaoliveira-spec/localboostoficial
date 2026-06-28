@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendText, phoneToChatId } from "@/lib/waha.server";
+import { sendText, phoneToChatId, getWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/waha/send")({
   server: {
@@ -13,47 +13,33 @@ export const Route = createFileRoute("/api/public/waha/send")({
         if (!user) return new Response("Unauthorized", { status: 401, headers: cors });
 
         const body = (await request.json().catch(() => ({}))) as {
-          conversation_id?: string;
-          text?: string;
-          is_ai?: boolean;
+          conversation_id?: string; text?: string; is_ai?: boolean;
         };
         const text = (body.text ?? "").trim();
         if (!text) return new Response("Texto obrigatório", { status: 400, headers: cors });
         if (!body.conversation_id) return new Response("conversation_id obrigatório", { status: 400, headers: cors });
 
-        const { data: conv, error: convErr } = await supabaseAdmin
+        const { data: conv } = await supabaseAdmin
           .from("conversations")
           .select("id, owner_id, contact:contacts(phone)")
-          .eq("id", body.conversation_id)
-          .maybeSingle();
-        if (convErr || !conv || conv.owner_id !== user.id) {
-          return new Response("Conversa não encontrada", { status: 404, headers: cors });
-        }
-
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (!cfg?.base_url) return new Response("Configure WAHA primeiro", { status: 400, headers: cors });
+          .eq("id", body.conversation_id).maybeSingle();
+        if (!conv || conv.owner_id !== user.id) return new Response("Conversa não encontrada", { status: 404, headers: cors });
 
         const phone = (conv.contact as { phone: string } | null)?.phone;
         if (!phone) return new Response("Contato sem telefone", { status: 400, headers: cors });
 
-        const chatId = phoneToChatId(phone);
-        const sessionName = sessionNameForUser(user.id);
+        let cfg;
+        try { cfg = getWahaConfig(); } catch (e) { return new Response((e as Error).message, { status: 500, headers: cors }); }
 
-        // Insert outbound message as 'sending'
         const { data: inserted, error: insErr } = await supabaseAdmin.from("messages").insert({
-          conversation_id: conv.id,
-          owner_id: user.id,
-          direction: "outbound",
-          status: "queued",
-          kind: "text",
-          body: text,
-          is_ai: !!body.is_ai,
+          conversation_id: conv.id, owner_id: user.id,
+          direction: "outbound", status: "queued", kind: "text",
+          body: text, is_ai: !!body.is_ai,
         }).select("id").single();
         if (insErr) return new Response(insErr.message, { status: 500, headers: cors });
 
         try {
-          await sendText(cfg, sessionName, chatId, text);
+          await sendText(cfg, sessionNameForUser(user.id), phoneToChatId(phone), text);
           await supabaseAdmin.from("messages").update({ status: "sent" }).eq("id", inserted!.id);
           await supabaseAdmin.from("conversations").update({
             last_message_at: new Date().toISOString(),

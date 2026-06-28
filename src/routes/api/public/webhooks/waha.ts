@@ -159,12 +159,19 @@ export const Route = createFileRoute("/api/public/webhooks/waha")({
 });
 
 async function dispatchOutbound(ownerId: string, convId: string, text: string, isAi: boolean) {
-  const { data: cfg } = await supabaseAdmin
-    .from("waha_config").select("base_url, api_key").eq("owner_id", ownerId).maybeSingle();
   const { data: conv } = await supabaseAdmin
     .from("conversations").select("id, contact:contacts(phone)").eq("id", convId).maybeSingle();
   const phone = (conv?.contact as { phone: string } | null)?.phone;
-  if (!cfg?.base_url || !phone) return;
+  if (!phone) return;
+
+  let cfg;
+  try {
+    const mod = await import("@/lib/waha.server");
+    cfg = mod.getWahaConfig();
+  } catch (e) {
+    console.error("[outbound] WAHA env missing", (e as Error).message);
+    return;
+  }
 
   const { sessionNameForUser } = await import("@/lib/api-auth.server");
   const { sendText, phoneToChatId } = await import("@/lib/waha.server");

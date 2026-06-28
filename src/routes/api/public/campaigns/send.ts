@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { sendText, phoneToChatId } from "@/lib/waha.server";
+import { sendText, phoneToChatId, getWahaConfig } from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/campaigns/send")({
   server: {
@@ -19,11 +19,9 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
           .from("campaigns").select("*").eq("id", campaign_id).eq("owner_id", user.id).maybeSingle();
         if (!campaign) return new Response("Campanha não encontrada", { status: 404, headers: cors });
 
-        const { data: cfg } = await supabaseAdmin
-          .from("waha_config").select("base_url, api_key").eq("owner_id", user.id).maybeSingle();
-        if (!cfg?.base_url) return new Response("Configure WAHA primeiro", { status: 400, headers: cors });
+        let cfg;
+        try { cfg = getWahaConfig(); } catch (e) { return new Response((e as Error).message, { status: 500, headers: cors }); }
 
-        // Audience: filter contacts by target_stage if specified, else all
         let query = supabaseAdmin.from("contacts").select("id, phone, name").eq("owner_id", user.id).not("phone", "is", null);
         if (campaign.target_stage) query = query.eq("stage", campaign.target_stage);
         const { data: contacts } = await query;
@@ -36,16 +34,10 @@ export const Route = createFileRoute("/api/public/campaigns/send")({
         const sessionName = sessionNameForUser(user.id);
         const template = campaign.message ?? "";
         let sent = 0, failed = 0;
-
-        // Best-effort sequential send with light throttle
         for (const c of list) {
           const text = template.replace(/\{\{\s*name\s*\}\}/gi, c.name ?? "");
-          try {
-            await sendText(cfg, sessionName, phoneToChatId(c.phone!), text);
-            sent++;
-          } catch {
-            failed++;
-          }
+          try { await sendText(cfg, sessionName, phoneToChatId(c.phone!), text); sent++; }
+          catch { failed++; }
           await new Promise((r) => setTimeout(r, 600));
         }
 

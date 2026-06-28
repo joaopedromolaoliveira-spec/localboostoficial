@@ -1,10 +1,17 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Users, CreditCard, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Shield, Users, CreditCard, TrendingUp, Loader2, Save } from "lucide-react";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -19,6 +26,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminPage,
 });
 
+type PlanRow = {
+  id: string; name: string; description: string | null;
+  price_cents: number; features: unknown; highlight: boolean;
+  sort_order: number; is_active: boolean; stripe_price_id: string | null;
+};
+
 function AdminPage() {
   const { data } = useQuery({
     queryKey: ["admin-overview"],
@@ -31,11 +44,8 @@ function AdminPage() {
       ]);
       const mrr = (subs.data ?? []).filter((s) => s.status === "active").reduce((sum, s) => sum + (s.amount_cents ?? 0), 0);
       return {
-        users: users.count ?? 0,
-        contacts: contacts.count ?? 0,
-        messages: messages.count ?? 0,
-        mrr,
-        arr: mrr * 12,
+        users: users.count ?? 0, contacts: contacts.count ?? 0, messages: messages.count ?? 0,
+        mrr, arr: mrr * 12,
         activeSubs: (subs.data ?? []).filter((s) => s.status === "active").length,
       };
     },
@@ -69,17 +79,97 @@ function AdminPage() {
               </Card>
             ))}
           </div>
-          <Card className="shadow-card">
-            <CardHeader><CardTitle>Atividade da plataforma</CardTitle></CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div><p className="text-sm text-muted-foreground">Contatos totais</p><p className="text-2xl font-bold">{data?.contacts ?? 0}</p></div>
-                <div><p className="text-sm text-muted-foreground">Mensagens totais</p><p className="text-2xl font-bold">{data?.messages ?? 0}</p></div>
-              </div>
-            </CardContent>
-          </Card>
+
+          <PlansEditor />
         </div>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function PlansEditor() {
+  const qc = useQueryClient();
+  const { data: plans, isLoading } = useQuery({
+    queryKey: ["plan-catalog-admin"],
+    queryFn: async (): Promise<PlanRow[]> => {
+      const { data } = await supabase.from("plan_catalog").select("*").order("sort_order");
+      return (data ?? []) as PlanRow[];
+    },
+  });
+
+  return (
+    <Card className="shadow-card">
+      <CardHeader>
+        <CardTitle>Planos & Preços</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+        {(plans ?? []).length === 0 && !isLoading && (
+          <p className="text-sm text-muted-foreground">Nenhum plano cadastrado ainda.</p>
+        )}
+        <div className="grid gap-4 md:grid-cols-3">
+          {(plans ?? []).map((p) => (
+            <PlanCard key={p.id} plan={p} onSaved={() => qc.invalidateQueries({ queryKey: ["plan-catalog-admin"] })} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PlanCard({ plan, onSaved }: { plan: PlanRow; onSaved: () => void }) {
+  const featuresArr = Array.isArray(plan.features) ? (plan.features as string[]) : [];
+  const [form, setForm] = useState({
+    name: plan.name,
+    description: plan.description ?? "",
+    price_cents: plan.price_cents,
+    features: featuresArr.join("\n"),
+    highlight: plan.highlight,
+    is_active: plan.is_active,
+    stripe_price_id: plan.stripe_price_id ?? "",
+  });
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("plan_catalog").update({
+        name: form.name,
+        description: form.description || null,
+        price_cents: Number(form.price_cents) || 0,
+        features: form.features.split("\n").map((s) => s.trim()).filter(Boolean),
+        highlight: form.highlight,
+        is_active: form.is_active,
+        stripe_price_id: form.stripe_price_id || null,
+      }).eq("id", plan.id);
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success(`Plano ${form.name} salvo`); onSaved(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="border-border">
+      <CardHeader>
+        <CardTitle className="text-base capitalize">{plan.id}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div><Label>Nome</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+        <div><Label>Descrição</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+        <div><Label>Preço (centavos)</Label>
+          <Input type="number" value={form.price_cents} onChange={(e) => setForm({ ...form, price_cents: Number(e.target.value) })} />
+          <p className="mt-1 text-xs text-muted-foreground">{brl(Number(form.price_cents) || 0)}/mês</p>
+        </div>
+        <div><Label>Recursos (um por linha)</Label>
+          <Textarea rows={5} value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} /></div>
+        <div><Label>Stripe Price ID</Label>
+          <Input placeholder="price_..." value={form.stripe_price_id} onChange={(e) => setForm({ ...form, stripe_price_id: e.target.value })} /></div>
+        <div className="flex items-center justify-between"><Label>Destaque</Label>
+          <Switch checked={form.highlight} onCheckedChange={(v) => setForm({ ...form, highlight: v })} /></div>
+        <div className="flex items-center justify-between"><Label>Ativo</Label>
+          <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} /></div>
+        <Button onClick={() => save.mutate()} disabled={save.isPending} className="w-full gap-2">
+          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

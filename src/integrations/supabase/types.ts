@@ -576,6 +576,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_user_plan: {
+        Args: {
+          _period_end?: string
+          _plan: Database["public"]["Enums"]["plan_tier"]
+          _status?: Database["public"]["Enums"]["subscription_status"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

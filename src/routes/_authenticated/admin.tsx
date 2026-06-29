@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Shield, Users, CreditCard, TrendingUp, Loader2, Save } from "lucide-react";
 import { brl } from "@/lib/format";
 
@@ -81,6 +83,7 @@ function AdminPage() {
           </div>
 
           <PlansEditor />
+          <UsersPlansEditor />
         </div>
       </SidebarInset>
     </SidebarProvider>

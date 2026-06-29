@@ -176,3 +176,102 @@ function PlanCard({ plan, onSaved }: { plan: PlanRow; onSaved: () => void }) {
     </Card>
   );
 }
+
+type UserRow = {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  business_name: string | null;
+};
+type SubRow = { user_id: string; plan: string; status: string; current_period_end: string | null };
+
+const PLAN_OPTIONS = ["trial", "starter", "pro", "business"] as const;
+const STATUS_OPTIONS = ["trialing", "active", "past_due", "canceled"] as const;
+
+function UsersPlansEditor() {
+  const qc = useQueryClient();
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-users-subs"],
+    queryFn: async () => {
+      const [{ data: profiles }, { data: subs }] = await Promise.all([
+        supabase.from("profiles").select("id,email,full_name,business_name").order("created_at", { ascending: false }).limit(200),
+        supabase.from("subscriptions").select("user_id,plan,status,current_period_end"),
+      ]);
+      const subMap = new Map<string, SubRow>();
+      (subs ?? []).forEach((s) => subMap.set(s.user_id, s as SubRow));
+      return { users: (profiles ?? []) as UserRow[], subs: subMap };
+    },
+  });
+
+  const setPlan = useMutation({
+    mutationFn: async (args: { userId: string; plan: string; status: string }) => {
+      const { error } = await supabase.rpc("admin_set_user_plan", {
+        _user_id: args.userId,
+        _plan: args.plan as never,
+        _status: args.status as never,
+        _period_end: null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast.success("Plano atualizado"); qc.invalidateQueries({ queryKey: ["admin-users-subs"] }); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const filtered = (data?.users ?? []).filter((u) => {
+    const q = search.toLowerCase();
+    if (!q) return true;
+    return (u.email ?? "").toLowerCase().includes(q)
+      || (u.full_name ?? "").toLowerCase().includes(q)
+      || (u.business_name ?? "").toLowerCase().includes(q);
+  });
+
+  return (
+    <Card className="shadow-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Usuários & Planos</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Input placeholder="Buscar por nome, email ou empresa..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+        <div className="space-y-2">
+          {filtered.map((u) => {
+            const sub = data?.subs.get(u.id);
+            const plan = sub?.plan ?? "trial";
+            const status = sub?.status ?? "trialing";
+            return (
+              <div key={u.id} className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="truncate font-medium">{u.full_name || u.email || u.id}</div>
+                  <div className="truncate text-xs text-muted-foreground">{u.email}{u.business_name ? ` · ${u.business_name}` : ""}</div>
+                  <div className="mt-1 flex gap-2">
+                    <Badge variant="outline" className="capitalize">{plan}</Badge>
+                    <Badge variant="outline">{status}</Badge>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Select defaultValue={plan} onValueChange={(v) => setPlan.mutate({ userId: u.id, plan: v, status: v === "trial" ? "trialing" : "active" })}>
+                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {PLAN_OPTIONS.map((p) => <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Select defaultValue={status} onValueChange={(v) => setPlan.mutate({ userId: u.id, plan, status: v })}>
+                    <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {STATUS_OPTIONS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            );
+          })}
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-sm text-muted-foreground">Nenhum usuário encontrado.</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+

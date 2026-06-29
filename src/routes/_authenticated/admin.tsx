@@ -210,7 +210,7 @@ function UsersPlansEditor() {
         _user_id: args.userId,
         _plan: args.plan as never,
         _status: args.status as never,
-        _period_end: null,
+        _period_end: undefined as never,
       });
       if (error) throw error;
     },

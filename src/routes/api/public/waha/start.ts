@@ -22,6 +22,7 @@ export const Route = createFileRoute("/api/public/waha/start")({
         const webhookUrl = `${origin}/api/public/webhooks/waha`;
 
         try {
+          // Garante que a sessão está rodando
           await startSession(cfg, sessionName, webhookUrl);
         } catch (e) {
           await supabaseAdmin.from("whatsapp_sessions").upsert(
@@ -31,12 +32,19 @@ export const Route = createFileRoute("/api/public/waha/start")({
           return new Response(`Falha ao iniciar sessão: ${(e as Error).message}`, { status: 502, headers: cors });
         }
 
+        // Aguardar um pouco para o WAHA processar e gerar o QR Code
         let qr: string | null = null;
-        let statusKey: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "scan_qr";
-        try { qr = await getQrImage(cfg, sessionName); } catch { /* not ready */ }
+        let statusKey: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "connecting";
+        
+        // Tentar obter o status e o QR Code
         try {
           const info = await getSessionInfo(cfg, sessionName);
           statusKey = mapWahaStatus(info.status);
+          
+          if (statusKey === "scan_qr") {
+            // Se estiver aguardando QR, tenta buscar a imagem
+            qr = await getQrImage(cfg, sessionName).catch(() => null);
+          }
         } catch { /* ignore */ }
 
         await supabaseAdmin.from("whatsapp_sessions").upsert({

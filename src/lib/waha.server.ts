@@ -128,7 +128,6 @@ export async function startSession(cfg: WahaConfig, sessionName: string, webhook
     const info = await getSessionInfo(cfg, sessionName);
     const status = mapWahaStatus(info.status);
     if (status === "working" || status === "scan_qr" || status === "connecting") {
-      await updateSessionConfig(cfg, sessionName, webhookUrl).catch(() => undefined);
       return info;
     }
     if (status === "failed") {

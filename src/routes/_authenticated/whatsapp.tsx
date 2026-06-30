@@ -42,7 +42,7 @@ function WhatsAppPage() {
 
 function SessionCard() {
   const qc = useQueryClient();
-  const { data: session, isLoading } = useQuery({
+  const { data: session } = useQuery({
     queryKey: ["whatsapp-session"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -51,40 +51,35 @@ function SessionCard() {
         .eq("owner_id", user.id).eq("name", "default").maybeSingle();
       return data;
     },
-    refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      // Refetch mais rápido quando estiver conectando ou esperando QR
-      return (status === "connecting" || status === "scan_qr") ? 2000 : 5000;
-    },
+    refetchInterval: 4000,
   });
 
-  const startSessionMutation = useMutation({
-    mutationFn: async () => {
-      const res = await authedFetch("/api/public/waha/start", { method: "POST", body: "{}" });
-      if (!res.ok) throw new Error(await res.text());
-      return res.json();
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["whatsapp-session"] });
-    },
-  });
-
-  // Auto-start session if needed
+  // Auto-start the session as soon as the user opens the page if not connected.
   useEffect(() => {
-    if (isLoading) return;
-    if (!session || session.status === "disconnected" || session.status === "failed") {
-      startSessionMutation.mutate();
+    if (!session) return;
+    if (session.status === "disconnected" || session.status === "failed") {
+      authedFetch("/api/public/waha/start", { method: "POST", body: "{}" }).catch(() => {});
     }
-  }, [session?.status, isLoading]);
+  }, [session?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    // Trigger first session creation when there's no row yet.
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("whatsapp_sessions").select("id")
+        .eq("owner_id", user.id).eq("name", "default").maybeSingle();
+      if (!data) {
+        await authedFetch("/api/public/waha/start", { method: "POST", body: "{}" }).catch(() => {});
+        qc.invalidateQueries({ queryKey: ["whatsapp-session"] });
+      }
+    })();
+  }, [qc]);
 
   useEffect(() => {
     const channel = supabase
-      .channel("ws-session-changes")
-      .on("postgres_changes", { 
-        event: "*", 
-        schema: "public", 
-        table: "whatsapp_sessions" 
-      }, () => {
+      .channel("ws-session")
+      .on("postgres_changes", { event: "*", schema: "public", table: "whatsapp_sessions" }, () => {
         qc.invalidateQueries({ queryKey: ["whatsapp-session"] });
       })
       .subscribe();
@@ -96,10 +91,7 @@ function SessionCard() {
       const res = await authedFetch("/api/public/waha/start", { method: "POST", body: "{}" });
       if (!res.ok) throw new Error(await res.text());
     },
-    onSuccess: () => { 
-      qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); 
-      toast.success("QR Code atualizado"); 
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); toast.success("QR Code atualizado"); },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -108,15 +100,12 @@ function SessionCard() {
       const res = await authedFetch("/api/public/waha/stop", { method: "POST", body: "{}" });
       if (!res.ok) throw new Error(await res.text());
     },
-    onSuccess: () => { 
-      toast.success("WhatsApp desconectado"); 
-      qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); 
-    },
+    onSuccess: () => { toast.success("WhatsApp desconectado"); qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); },
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const status = session?.status ?? (isLoading ? "connecting" : "disconnected");
-  const meta = STATUS_LABEL[status] || STATUS_LABEL.disconnected;
+  const status = session?.status ?? "connecting";
+  const meta = STATUS_LABEL[status];
   const Icon = meta.icon;
 
   return (
@@ -150,24 +139,14 @@ function SessionCard() {
         ) : (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              {status === "failed" ? "Falha ao carregar. Tente atualizar." : "Preparando seu QR Code…"}
-            </p>
+            <p className="mt-3 text-sm text-muted-foreground">Preparando seu QR Code…</p>
           </div>
         )}
 
         <div className="flex gap-2">
           {status !== "working" && (
-            <Button 
-              onClick={() => refresh.mutate()} 
-              disabled={refresh.isPending || startSessionMutation.isPending} 
-              className="flex-1 gap-2 shadow-glow"
-            >
-              {(refresh.isPending || startSessionMutation.isPending) ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
+            <Button onClick={() => refresh.mutate()} disabled={refresh.isPending} className="flex-1 gap-2 shadow-glow">
+              {refresh.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
               Atualizar QR Code
             </Button>
           )}

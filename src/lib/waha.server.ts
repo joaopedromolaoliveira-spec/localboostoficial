@@ -67,7 +67,6 @@ function sessionPayload(sessionName: string, webhookUrl: string) {
   return {
     name: sessionName,
     config: {
-      client: { deviceName: "LocalBoost", browserName: "Chrome" },
       metadata: { "localboost.session": sessionName },
       ignore: { status: true, groups: false, channels: true, broadcast: true },
       webhooks: [{

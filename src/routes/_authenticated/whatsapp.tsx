@@ -73,7 +73,7 @@ function SessionCard() {
         body: JSON.stringify({ reset: session.status === "failed" }),
       }).then(() => qc.invalidateQueries({ queryKey: ["whatsapp-session"] })).catch(() => {});
     }
-  }, [qc, session]);
+  }, [qc, session?.status]);
 
   useEffect(() => {
     // Trigger first session creation when there's no row yet.

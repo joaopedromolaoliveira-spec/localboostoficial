@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { authedFetch } from "@/lib/api-client";
@@ -9,9 +9,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, QrCode, RefreshCw, LogOut, Smartphone, CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
+import { Loader2, QrCode, RefreshCw, LogOut, Smartphone, CheckCircle2, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   head: () => ({ meta: [{ title: "WhatsApp — LocalBoost" }] }),
@@ -44,9 +42,6 @@ function WhatsAppPage() {
 
 function SessionCard() {
   const qc = useQueryClient();
-  const recoveryAttempted = useRef(false);
-  const [phone, setPhone] = useState("");
-  const [pairingCode, setPairingCode] = useState<string | null>(null);
   const { data: session } = useQuery({
     queryKey: ["whatsapp-session"],
     queryFn: async () => {
@@ -60,20 +55,12 @@ function SessionCard() {
   });
 
   // Auto-start the session as soon as the user opens the page if not connected.
-  // Failed sessions are reset once to avoid the old infinite “Preparando QR Code” loop.
   useEffect(() => {
     if (!session) return;
     if (session.status === "disconnected" || session.status === "failed") {
-      if (session.status === "failed") {
-        if (recoveryAttempted.current) return;
-        recoveryAttempted.current = true;
-      }
-      authedFetch("/api/public/waha/start", {
-        method: "POST",
-        body: JSON.stringify({ reset: session.status === "failed" }),
-      }).then(() => qc.invalidateQueries({ queryKey: ["whatsapp-session"] })).catch(() => {});
+      authedFetch("/api/public/waha/start", { method: "POST", body: "{}" }).catch(() => {});
     }
-  }, [qc, session?.status]);
+  }, [session?.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Trigger first session creation when there's no row yet.
@@ -101,30 +88,10 @@ function SessionCard() {
 
   const refresh = useMutation({
     mutationFn: async () => {
-      const res = await authedFetch("/api/public/waha/start", {
-        method: "POST",
-        body: JSON.stringify({ reset: status === "failed" }),
-      });
+      const res = await authedFetch("/api/public/waha/start", { method: "POST", body: "{}" });
       if (!res.ok) throw new Error(await res.text());
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["whatsapp-session"] }); toast.success("QR Code atualizado"); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  const pair = useMutation({
-    mutationFn: async () => {
-      const res = await authedFetch("/api/public/waha/pair", {
-        method: "POST",
-        body: JSON.stringify({ phone }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      return (await res.json()) as { code: string };
-    },
-    onSuccess: (data) => {
-      setPairingCode(data.code);
-      toast.success("Código de pareamento gerado");
-      qc.invalidateQueries({ queryKey: ["whatsapp-session"] });
-    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -169,12 +136,6 @@ function SessionCard() {
               Abra o WhatsApp → <b>Aparelhos conectados</b> → <b>Conectar um aparelho</b> e escaneie este código.
             </p>
           </div>
-        ) : status === "failed" ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-6 text-center">
-            <AlertCircle className="mx-auto h-10 w-10 text-destructive" />
-            <p className="mt-3 font-semibold text-destructive">Sessão expirada ou recusada pelo WhatsApp</p>
-            <p className="text-sm text-muted-foreground">Gere um novo QR Code e conecte novamente pelo celular.</p>
-          </div>
         ) : (
           <div className="rounded-lg border border-dashed p-8 text-center">
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
@@ -186,7 +147,7 @@ function SessionCard() {
           {status !== "working" && (
             <Button onClick={() => refresh.mutate()} disabled={refresh.isPending} className="flex-1 gap-2 shadow-glow">
               {refresh.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-              {status === "failed" ? "Gerar novo QR Code" : "Atualizar QR Code"}
+              Atualizar QR Code
             </Button>
           )}
           {status === "working" && (
@@ -196,33 +157,6 @@ function SessionCard() {
             </Button>
           )}
         </div>
-
-        {status !== "working" && (
-          <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-            <div>
-              <Label htmlFor="pair-phone">Conectar por número de telefone</Label>
-              <div className="mt-2 flex gap-2">
-                <Input
-                  id="pair-phone"
-                  inputMode="tel"
-                  placeholder="Ex: 5511999999999"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-                <Button variant="outline" onClick={() => pair.mutate()} disabled={pair.isPending || phone.replace(/\D/g, "").length < 10} className="gap-2">
-                  {pair.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
-                  Código
-                </Button>
-              </div>
-            </div>
-            {pairingCode && (
-              <div className="rounded-md bg-background p-3 text-center">
-                <div className="text-2xl font-bold tracking-widest">{pairingCode}</div>
-                <p className="text-xs text-muted-foreground">No WhatsApp, toque em Conectar aparelho → Conectar com número.</p>
-              </div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );

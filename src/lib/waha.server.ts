@@ -4,18 +4,6 @@
 
 export type WahaConfig = { base_url: string; api_key: string | null };
 
-export class WahaHttpError extends Error {
-  status: number;
-  body: string;
-
-  constructor(status: number, body: string, statusText: string) {
-    super(`WAHA ${status}: ${body || statusText}`);
-    this.name = "WahaHttpError";
-    this.status = status;
-    this.body = body;
-  }
-}
-
 export function getWahaConfig(): WahaConfig {
   const base_url = process.env.WAHA_BASE_URL?.replace(/\/+$/, "") ?? "";
   const api_key = process.env.WAHA_API_KEY ?? null;
@@ -40,7 +28,7 @@ export async function wahaRequest<T = unknown>(cfg: WahaConfig, path: string, in
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new WahaHttpError(res.status, text, res.statusText);
+    throw new Error(`WAHA ${res.status}: ${text || res.statusText}`);
   }
   const ct = res.headers.get("content-type") ?? "";
   if (ct.includes("application/json")) return (await res.json()) as T;
@@ -57,135 +45,26 @@ export const mapWahaStatus = (s?: string) => {
     case "WORKING": return "working" as const;
     case "SCAN_QR_CODE": return "scan_qr" as const;
     case "STARTING": return "connecting" as const;
-    case "STOPPED": return "disconnected" as const;
     case "FAILED": return "failed" as const;
     default: return "disconnected" as const;
   }
 };
 
-function sessionPayload(sessionName: string, webhookUrl: string) {
-  return {
+export async function startSession(cfg: WahaConfig, sessionName: string, webhookUrl: string) {
+  const payload = {
     name: sessionName,
     config: {
-      metadata: { "localboost.session": sessionName },
-      ignore: { status: true, groups: false, channels: true, broadcast: true },
-      webhooks: [{
-        url: webhookUrl,
-        events: ["message", "message.any", "session.status"],
-        retries: { policy: "constant", delaySeconds: 2, attempts: 10 },
-      }],
+      webhooks: [{ url: webhookUrl, events: ["message", "message.any", "session.status"] }],
     },
   };
-}
-
-function isNotFound(error: unknown) {
-  return error instanceof WahaHttpError && error.status === 404;
-}
-
-function isConflict(error: unknown) {
-  return error instanceof WahaHttpError && (error.status === 409 || error.status === 422 || /exist|already/i.test(error.body));
-}
-
-async function createSession(cfg: WahaConfig, sessionName: string, webhookUrl: string) {
-  return wahaRequest(cfg, "/api/sessions", {
-    method: "POST",
-    body: JSON.stringify(sessionPayload(sessionName, webhookUrl)),
-  });
-}
-
-export async function updateSessionConfig(cfg: WahaConfig, sessionName: string, webhookUrl: string) {
-  return wahaRequest(cfg, `/api/sessions/${sessionName}`, {
-    method: "PUT",
-    body: JSON.stringify(sessionPayload(sessionName, webhookUrl)),
-  });
-}
-
-export async function restartSession(cfg: WahaConfig, sessionName: string) {
-  return wahaRequest(cfg, `/api/sessions/${sessionName}/restart`, { method: "POST" });
-}
-
-export async function logoutSession(cfg: WahaConfig, sessionName: string) {
-  return wahaRequest(cfg, `/api/sessions/${sessionName}/logout`, { method: "POST" });
-}
-
-export async function deleteSession(cfg: WahaConfig, sessionName: string) {
-  return wahaRequest(cfg, `/api/sessions/${sessionName}`, { method: "DELETE" });
-}
-
-export async function startSession(cfg: WahaConfig, sessionName: string, webhookUrl: string, options: { reset?: boolean } = {}) {
-  if (options.reset) {
-    await deleteSession(cfg, sessionName).catch(() => undefined);
-    try {
-      return await createSession(cfg, sessionName, webhookUrl);
-    } catch (error) {
-      if (!isConflict(error)) throw error;
-      await updateSessionConfig(cfg, sessionName, webhookUrl).catch(() => undefined);
-      return restartSession(cfg, sessionName);
-    }
-  }
-
   try {
-    const info = await getSessionInfo(cfg, sessionName);
-    const status = mapWahaStatus(info.status);
-    if (status === "working" || status === "scan_qr" || status === "connecting") {
-      return info;
-    }
-    if (status === "failed") {
-      await logoutSession(cfg, sessionName).catch(() => undefined);
-      await updateSessionConfig(cfg, sessionName, webhookUrl).catch(() => undefined);
-      return restartSession(cfg, sessionName);
-    }
-  } catch (error) {
-    if (!isNotFound(error)) throw error;
-  }
-
-  try {
-    return await createSession(cfg, sessionName, webhookUrl);
-  } catch (error) {
-    if (!isConflict(error)) throw error;
-    await updateSessionConfig(cfg, sessionName, webhookUrl).catch(() => undefined);
-    return wahaRequest(cfg, `/api/sessions/${sessionName}/start`, { method: "POST" });
-  }
-}
-
-export async function ensureSessionReady(cfg: WahaConfig, sessionName: string, webhookUrl: string, reset = false) {
-  await startSession(cfg, sessionName, webhookUrl, { reset });
-
-  let qr: string | null = null;
-  let phoneNumber: string | null = null;
-  let status: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "connecting";
-
-  for (let attempt = 0; attempt < 8; attempt++) {
+    return await wahaRequest(cfg, "/api/sessions/start", { method: "POST", body: JSON.stringify(payload) });
+  } catch {
     try {
-      const info = await getSessionInfo(cfg, sessionName);
-      status = mapWahaStatus(info.status);
-      phoneNumber = info.me?.id ? chatIdToPhone(info.me.id) : null;
-      if (status === "working") break;
-    } catch {
-      // WAHA can need a short moment before the newly-created session is readable.
-    }
-
-    if (status === "scan_qr" || status === "connecting") {
-      try {
-        qr = await getQrImage(cfg, sessionName);
-        if (qr) {
-          status = "scan_qr";
-          break;
-        }
-      } catch {
-        // QR not generated yet; keep polling briefly.
-      }
-    }
-
-    if (status === "failed") break;
-    await new Promise((resolve) => setTimeout(resolve, 900));
+      await wahaRequest(cfg, "/api/sessions", { method: "POST", body: JSON.stringify(payload) });
+    } catch { /* may already exist */ }
+    return await wahaRequest(cfg, `/api/sessions/${sessionName}/start`, { method: "POST" });
   }
-
-  if (status === "failed" && !reset) {
-    return ensureSessionReady(cfg, sessionName, webhookUrl, true);
-  }
-
-  return { status, qr, phoneNumber };
 }
 
 export async function stopSession(cfg: WahaConfig, sessionName: string) {

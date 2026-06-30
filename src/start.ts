@@ -1,24 +1,59 @@
-import { createStart, createMiddleware } from "@tanstack/react-start";
+import { createFileRoute } from "@tanstack/react-router";
+import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { startSession, getQrImage, getSessionInfo, mapWahaStatus, getWahaConfig } from "@/lib/waha.server";
 
-import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
+export const Route = createFileRoute("/api/public/waha/start")({
+  server: {
+    handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: publicCors() }),
+      POST: async ({ request }) => {
+        const cors = publicCors();
+        const user = await getUserFromAuthHeader(request);
+        if (!user) return new Response("Unauthorized", { status: 401, headers: cors });
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  try {
-    return await next();
-  } catch (error) {
-    if (error != null && typeof error === "object" && "statusCode" in error) {
-      throw error;
-    }
-    console.error(error);
-    return new Response(renderErrorPage(), {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
-  }
+        let cfg;
+        try { cfg = getWahaConfig(); } catch (e) {
+          return new Response((e as Error).message, { status: 500, headers: cors });
+        }
+
+        const sessionName = sessionNameForUser(user.id);
+        const origin = new URL(request.url).origin;
+        const webhookUrl = `${origin}/api/public/webhooks/waha`;
+
+        try {
+          // Garante que a sessão está rodando
+          await startSession(cfg, sessionName, webhookUrl);
+        } catch (e) {
+          await supabaseAdmin.from("whatsapp_sessions").upsert(
+            { owner_id: user.id, name: "default", status: "failed", last_status_at: new Date().toISOString() },
+            { onConflict: "owner_id,name" },
+          );
+          return new Response(`Falha ao iniciar sessão: ${(e as Error).message}`, { status: 502, headers: cors });
+        }
+
+        // Aguardar um pouco para o WAHA processar e gerar o QR Code
+        let qr: string | null = null;
+        let statusKey: "scan_qr" | "working" | "connecting" | "failed" | "disconnected" = "connecting";
+        
+        // Tentar obter o status e o QR Code
+        try {
+          const info = await getSessionInfo(cfg, sessionName);
+          statusKey = mapWahaStatus(info.status);
+          
+          if (statusKey === "scan_qr") {
+            // Se estiver aguardando QR, tenta buscar a imagem
+            qr = await getQrImage(cfg, sessionName).catch(() => null);
+          }
+        } catch { /* ignore */ }
+
+        await supabaseAdmin.from("whatsapp_sessions").upsert({
+          owner_id: user.id, name: "default",
+          status: statusKey, qr_code: qr, last_status_at: new Date().toISOString(),
+        }, { onConflict: "owner_id,name" });
+
+        return Response.json({ ok: true, status: statusKey, has_qr: !!qr }, { headers: cors });
+      },
+    },
+  },
 });
-
-export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware],
-}));

@@ -9,6 +9,7 @@ type WahaWebhook = {
   event?: string;
   session?: string;
   payload?: any;
+  me?: { id?: string; pushName?: string };
 };
 
 // Public WAHA webhook. We identify the user via the session name (uXXXXXX...).
@@ -35,9 +36,10 @@ export const Route = createFileRoute("/api/public/webhooks/waha")({
 
         if (ev === "session.status") {
           const status = mapWahaStatus(body.payload?.status);
+          const me = body.payload?.me ?? body.me;
           await supabaseAdmin.from("whatsapp_sessions").update({
             status: status as any,
-            phone_number: body.payload?.me?.id ? chatIdToPhone(body.payload.me.id) : null,
+            phone_number: me?.id ? chatIdToPhone(me.id) : null,
             last_status_at: new Date().toISOString(),
             qr_code: status === "working" ? null : undefined,
           }).eq("owner_id", ownerId).eq("name", "default");

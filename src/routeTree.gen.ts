@@ -30,6 +30,7 @@ import { Route as ApiPublicWahaStopRouteImport } from './routes/api/public/waha/
 import { Route as ApiPublicWahaStartRouteImport } from './routes/api/public/waha/start'
 import { Route as ApiPublicWahaSendRouteImport } from './routes/api/public/waha/send'
 import { Route as ApiPublicWahaPairRouteImport } from './routes/api/public/waha/pair'
+import { Route as ApiPublicWahaHealthRouteImport } from './routes/api/public/waha/health'
 import { Route as ApiPublicCampaignsSendRouteImport } from './routes/api/public/campaigns/send'
 import { Route as ApiPublicAiTestRouteImport } from './routes/api/public/ai/test'
 
@@ -140,6 +141,11 @@ const ApiPublicWahaPairRoute = ApiPublicWahaPairRouteImport.update({
   path: '/api/public/waha/pair',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWahaHealthRoute = ApiPublicWahaHealthRouteImport.update({
+  id: '/api/public/waha/health',
+  path: '/api/public/waha/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCampaignsSendRoute = ApiPublicCampaignsSendRouteImport.update({
   id: '/api/public/campaigns/send',
   path: '/api/public/campaigns/send',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ai/test': typeof ApiPublicAiTestRoute
   '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
+  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
   '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
   '/api/public/waha/send': typeof ApiPublicWahaSendRoute
   '/api/public/waha/start': typeof ApiPublicWahaStartRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ai/test': typeof ApiPublicAiTestRoute
   '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
+  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
   '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
   '/api/public/waha/send': typeof ApiPublicWahaSendRoute
   '/api/public/waha/start': typeof ApiPublicWahaStartRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
   '/api/public/ai/test': typeof ApiPublicAiTestRoute
   '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
+  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
   '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
   '/api/public/waha/send': typeof ApiPublicWahaSendRoute
   '/api/public/waha/start': typeof ApiPublicWahaStartRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/api/public/ai/test'
     | '/api/public/campaigns/send'
+    | '/api/public/waha/health'
     | '/api/public/waha/pair'
     | '/api/public/waha/send'
     | '/api/public/waha/start'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/whatsapp'
     | '/api/public/ai/test'
     | '/api/public/campaigns/send'
+    | '/api/public/waha/health'
     | '/api/public/waha/pair'
     | '/api/public/waha/send'
     | '/api/public/waha/start'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/_authenticated/whatsapp'
     | '/api/public/ai/test'
     | '/api/public/campaigns/send'
+    | '/api/public/waha/health'
     | '/api/public/waha/pair'
     | '/api/public/waha/send'
     | '/api/public/waha/start'
@@ -309,6 +321,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicAiTestRoute: typeof ApiPublicAiTestRoute
   ApiPublicCampaignsSendRoute: typeof ApiPublicCampaignsSendRoute
+  ApiPublicWahaHealthRoute: typeof ApiPublicWahaHealthRoute
   ApiPublicWahaPairRoute: typeof ApiPublicWahaPairRoute
   ApiPublicWahaSendRoute: typeof ApiPublicWahaSendRoute
   ApiPublicWahaStartRoute: typeof ApiPublicWahaStartRoute
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWahaPairRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/waha/health': {
+      id: '/api/public/waha/health'
+      path: '/api/public/waha/health'
+      fullPath: '/api/public/waha/health'
+      preLoaderRoute: typeof ApiPublicWahaHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/campaigns/send': {
       id: '/api/public/campaigns/send'
       path: '/api/public/campaigns/send'
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicAiTestRoute: ApiPublicAiTestRoute,
   ApiPublicCampaignsSendRoute: ApiPublicCampaignsSendRoute,
+  ApiPublicWahaHealthRoute: ApiPublicWahaHealthRoute,
   ApiPublicWahaPairRoute: ApiPublicWahaPairRoute,
   ApiPublicWahaSendRoute: ApiPublicWahaSendRoute,
   ApiPublicWahaStartRoute: ApiPublicWahaStartRoute,

@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getUserFromAuthHeader, publicCors, sessionNameForUser } from "@/lib/api-auth.server";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { startSession, getQrImage, getSessionInfo, mapWahaStatus, getWahaConfig } from "@/lib/waha.server";
+import {
+  startSession, getQrImage, getSessionInfo, mapWahaStatus,
+  getWahaConfig, getWahaKeyInfo, WahaHttpError, logWahaError,
+} from "@/lib/waha.server";
 
 export const Route = createFileRoute("/api/public/waha/start")({
   server: {
@@ -14,6 +17,10 @@ export const Route = createFileRoute("/api/public/waha/start")({
 
         let cfg;
         try { cfg = getWahaConfig(); } catch (e) {
+          await logWahaError({
+            owner_id: user.id, endpoint: "(config)", http_status: null,
+            message: (e as Error).message, key_info: getWahaKeyInfo(),
+          });
           return new Response((e as Error).message, { status: 500, headers: cors });
         }
 
@@ -24,11 +31,23 @@ export const Route = createFileRoute("/api/public/waha/start")({
         try {
           await startSession(cfg, sessionName, webhookUrl);
         } catch (e) {
+          const err = e as WahaHttpError | Error;
+          const status = err instanceof WahaHttpError ? err.status : null;
+          await logWahaError({
+            owner_id: user.id,
+            endpoint: err instanceof WahaHttpError ? err.endpoint : "/api/sessions/start",
+            http_status: status,
+            message: err.message ?? String(err),
+            key_info: cfg.key_info,
+          });
           await supabaseAdmin.from("whatsapp_sessions").upsert(
             { owner_id: user.id, name: "default", status: "failed", last_status_at: new Date().toISOString() },
             { onConflict: "owner_id,name" },
           );
-          return new Response(`Falha ao iniciar sessão: ${(e as Error).message}`, { status: 502, headers: cors });
+          const detail = status === 401 || status === 403
+            ? "WAHA rejeitou a API key. Verifique WAHA_API_KEY/WHATSAPP_API_KEY no servidor (aba Health)."
+            : err.message;
+          return new Response(`Falha ao iniciar sessão: ${detail}`, { status: 502, headers: cors });
         }
 
         let qr: string | null = null;

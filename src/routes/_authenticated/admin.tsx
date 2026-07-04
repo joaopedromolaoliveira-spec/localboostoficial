@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, CreditCard, TrendingUp, Loader2, Save } from "lucide-react";
+import { Shield, Users, CreditCard, TrendingUp, Loader2, Save, AlertTriangle } from "lucide-react";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -82,6 +82,7 @@ function AdminPage() {
             ))}
           </div>
 
+          <WahaErrorsCard />
           <PlansEditor />
           <UsersPlansEditor />
         </div>
@@ -275,3 +276,59 @@ function UsersPlansEditor() {
   );
 }
 
+
+type WahaErrorRow = {
+  id: string;
+  owner_id: string | null;
+  endpoint: string;
+  http_status: number | null;
+  message: string | null;
+  key_source: string | null;
+  key_length: number | null;
+  created_at: string;
+};
+
+function WahaErrorsCard() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["waha-errors"],
+    queryFn: async (): Promise<WahaErrorRow[]> => {
+      const { data } = await supabase.from("waha_error_log" as never)
+        .select("*").order("created_at", { ascending: false }).limit(20);
+      return (data ?? []) as unknown as WahaErrorRow[];
+    },
+    refetchInterval: 10000,
+  });
+
+  return (
+    <Card className="shadow-card">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5 text-amber-500" /> Últimos erros WAHA
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
+        {!isLoading && (data ?? []).length === 0 && (
+          <p className="text-sm text-muted-foreground">Nenhum erro registrado. 🎉</p>
+        )}
+        {(data ?? []).map((e) => (
+          <div key={e.id} className="rounded-md border p-3 text-sm space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="destructive">HTTP {e.http_status ?? "?"}</Badge>
+              <span className="font-mono text-xs">{e.endpoint}</span>
+              <Badge variant="outline">
+                {e.key_source ?? "sem key"}{e.key_length ? ` · ${e.key_length} chars` : ""}
+              </Badge>
+              <span className="ml-auto text-xs text-muted-foreground">
+                {new Date(e.created_at).toLocaleString("pt-BR")}
+              </span>
+            </div>
+            {e.message && (
+              <p className="text-xs text-muted-foreground break-words">{e.message}</p>
+            )}
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}

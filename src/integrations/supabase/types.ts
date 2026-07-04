@@ -532,6 +532,39 @@ export type Database = {
         }
         Relationships: []
       }
+      waha_error_log: {
+        Row: {
+          created_at: string
+          endpoint: string
+          http_status: number | null
+          id: string
+          key_length: number | null
+          key_source: string | null
+          message: string | null
+          owner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          http_status?: number | null
+          id?: string
+          key_length?: number | null
+          key_source?: string | null
+          message?: string | null
+          owner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          http_status?: number | null
+          id?: string
+          key_length?: number | null
+          key_source?: string | null
+          message?: string | null
+          owner_id?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_sessions: {
         Row: {
           created_at: string

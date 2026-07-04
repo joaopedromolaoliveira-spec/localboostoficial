@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, CreditCard, TrendingUp, Loader2, Save } from "lucide-react";
+import { Shield, Users, CreditCard, TrendingUp, Loader2, Save, AlertTriangle } from "lucide-react";
 import { brl } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -82,6 +82,7 @@ function AdminPage() {
             ))}
           </div>
 
+          <WahaErrorsCard />
           <PlansEditor />
           <UsersPlansEditor />
         </div>

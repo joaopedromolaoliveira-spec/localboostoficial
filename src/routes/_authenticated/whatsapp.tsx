@@ -16,16 +16,14 @@ function WhatsAppPage() {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-14 items-center justify-between gap-3 border-b px-4">
-          <div className="flex items-center gap-3">
-            <SidebarTrigger />
-            <h1 className="font-semibold">WhatsApp</h1>
-          </div>
-          <WhatsAppProvider>
-            <WhatsAppStatus />
-          </WhatsAppProvider>
-        </header>
         <WhatsAppProvider>
+          <header className="flex h-14 items-center justify-between gap-3 border-b px-4">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <h1 className="font-semibold">WhatsApp</h1>
+            </div>
+            <WhatsAppStatus />
+          </header>
           <div className="flex flex-col items-center gap-6 p-6">
             <QRCodeCard />
             <SendMessageCard />

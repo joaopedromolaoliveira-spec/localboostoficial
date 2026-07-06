@@ -1,0 +1,24 @@
+# docker-compose para rodar localmente ou em uma VPS (com Postgres embutido).
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: whatsapp
+      POSTGRES_PASSWORD: whatsapp
+      POSTGRES_DB: whatsapp_db
+    volumes:
+      - wa_pgdata:/var/lib/postgresql/data
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on: [db]
+    environment:
+      PORT: "8080"
+      DATABASE_URL: "postgres://whatsapp:whatsapp@db:5432/whatsapp_db?sslmode=disable"
+      WA_WEBHOOK_URL: "https://localboostoficial.lovable.app/api/public/webhooks/waha"
+    ports:
+      - "8080:8080"
+volumes:
+  wa_pgdata:

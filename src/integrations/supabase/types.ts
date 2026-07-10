@@ -14,367 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      affiliates: {
+      appointments: {
         Row: {
-          code: string
-          commission_pct: number
+          contact_id: string
           created_at: string
-          earnings_cents: number
+          end_time: string
           id: string
-          paid_cents: number
-          user_id: string
+          notes: string | null
+          owner_id: string
+          start_time: string
+          status: Database["public"]["Enums"]["appointment_status"]
+          subject: string | null
+          timezone: string
+          updated_at: string
         }
         Insert: {
-          code: string
-          commission_pct?: number
+          contact_id: string
           created_at?: string
-          earnings_cents?: number
+          end_time: string
           id?: string
-          paid_cents?: number
-          user_id: string
+          notes?: string | null
+          owner_id: string
+          start_time: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          subject?: string | null
+          timezone?: string
+          updated_at?: string
         }
         Update: {
-          code?: string
-          commission_pct?: number
+          contact_id?: string
           created_at?: string
-          earnings_cents?: number
+          end_time?: string
           id?: string
-          paid_cents?: number
-          user_id?: string
+          notes?: string | null
+          owner_id?: string
+          start_time?: string
+          status?: Database["public"]["Enums"]["appointment_status"]
+          subject?: string | null
+          timezone?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "appointments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
-      ai_assistants: {
+      bot_settings: {
         Row: {
           created_at: string
-          enabled: boolean
           id: string
-          knowledge: string | null
-          model: string
           name: string
           owner_id: string
-          provider: Database["public"]["Enums"]["ai_provider"]
+          personality: string
           system_prompt: string
           updated_at: string
         }
         Insert: {
           created_at?: string
-          enabled?: boolean
           id?: string
-          knowledge?: string | null
-          model?: string
           name?: string
           owner_id: string
-          provider?: Database["public"]["Enums"]["ai_provider"]
+          personality?: string
           system_prompt?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
-          enabled?: boolean
           id?: string
-          knowledge?: string | null
-          model?: string
           name?: string
           owner_id?: string
-          provider?: Database["public"]["Enums"]["ai_provider"]
+          personality?: string
           system_prompt?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      automations: {
-        Row: {
-          created_at: string
-          enabled: boolean
-          id: string
-          name: string
-          owner_id: string
-          runs_count: number
-          steps: Json
-          trigger_config: Json
-          trigger_type: Database["public"]["Enums"]["automation_trigger"]
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          enabled?: boolean
-          id?: string
-          name: string
-          owner_id: string
-          runs_count?: number
-          steps?: Json
-          trigger_config?: Json
-          trigger_type: Database["public"]["Enums"]["automation_trigger"]
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          enabled?: boolean
-          id?: string
-          name?: string
-          owner_id?: string
-          runs_count?: number
-          steps?: Json
-          trigger_config?: Json
-          trigger_type?: Database["public"]["Enums"]["automation_trigger"]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      campaigns: {
-        Row: {
-          created_at: string
-          failed_count: number
-          id: string
-          media_url: string | null
-          message: string
-          name: string
-          owner_id: string
-          scheduled_at: string | null
-          sent_count: number
-          status: Database["public"]["Enums"]["campaign_status"]
-          target_stage: Database["public"]["Enums"]["contact_stage"] | null
-          target_tags: string[]
-          total_count: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          failed_count?: number
-          id?: string
-          media_url?: string | null
-          message: string
-          name: string
-          owner_id: string
-          scheduled_at?: string | null
-          sent_count?: number
-          status?: Database["public"]["Enums"]["campaign_status"]
-          target_stage?: Database["public"]["Enums"]["contact_stage"] | null
-          target_tags?: string[]
-          total_count?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          failed_count?: number
-          id?: string
-          media_url?: string | null
-          message?: string
-          name?: string
-          owner_id?: string
-          scheduled_at?: string | null
-          sent_count?: number
-          status?: Database["public"]["Enums"]["campaign_status"]
-          target_stage?: Database["public"]["Enums"]["contact_stage"] | null
-          target_tags?: string[]
-          total_count?: number
           updated_at?: string
         }
         Relationships: []
       }
       contacts: {
         Row: {
-          avatar_url: string | null
+          budget: number | null
           created_at: string
           email: string | null
           id: string
-          last_contacted_at: string | null
+          is_subscribed: boolean
+          last_interaction_at: string | null
+          locale: string | null
           name: string | null
           notes: string | null
           owner_id: string
-          phone: string
-          stage: Database["public"]["Enums"]["contact_stage"]
-          tags: string[]
+          phone_number: string
+          preferences: Json
+          requirements: Json
           updated_at: string
         }
         Insert: {
-          avatar_url?: string | null
+          budget?: number | null
           created_at?: string
           email?: string | null
           id?: string
-          last_contacted_at?: string | null
+          is_subscribed?: boolean
+          last_interaction_at?: string | null
+          locale?: string | null
           name?: string | null
           notes?: string | null
           owner_id: string
-          phone: string
-          stage?: Database["public"]["Enums"]["contact_stage"]
-          tags?: string[]
+          phone_number: string
+          preferences?: Json
+          requirements?: Json
           updated_at?: string
         }
         Update: {
-          avatar_url?: string | null
+          budget?: number | null
           created_at?: string
           email?: string | null
           id?: string
-          last_contacted_at?: string | null
+          is_subscribed?: boolean
+          last_interaction_at?: string | null
+          locale?: string | null
           name?: string | null
           notes?: string | null
           owner_id?: string
-          phone?: string
-          stage?: Database["public"]["Enums"]["contact_stage"]
-          tags?: string[]
+          phone_number?: string
+          preferences?: Json
+          requirements?: Json
           updated_at?: string
         }
         Relationships: []
       }
       conversations: {
         Row: {
-          ai_enabled: boolean
-          assigned_to: string | null
           contact_id: string
           created_at: string
           id: string
-          last_message_at: string | null
-          last_message_preview: string | null
+          last_bot_message_at: string | null
+          last_bot_message_text: string | null
+          last_user_message_at: string | null
+          last_user_message_text: string | null
+          metadata: Json
           owner_id: string
-          session_id: string | null
-          status: Database["public"]["Enums"]["conversation_status"]
-          unread_count: number
+          session_open: boolean
           updated_at: string
         }
         Insert: {
-          ai_enabled?: boolean
-          assigned_to?: string | null
           contact_id: string
           created_at?: string
           id?: string
-          last_message_at?: string | null
-          last_message_preview?: string | null
+          last_bot_message_at?: string | null
+          last_bot_message_text?: string | null
+          last_user_message_at?: string | null
+          last_user_message_text?: string | null
+          metadata?: Json
           owner_id: string
-          session_id?: string | null
-          status?: Database["public"]["Enums"]["conversation_status"]
-          unread_count?: number
+          session_open?: boolean
           updated_at?: string
         }
         Update: {
-          ai_enabled?: boolean
-          assigned_to?: string | null
           contact_id?: string
           created_at?: string
           id?: string
-          last_message_at?: string | null
-          last_message_preview?: string | null
+          last_bot_message_at?: string | null
+          last_bot_message_text?: string | null
+          last_user_message_at?: string | null
+          last_user_message_text?: string | null
+          metadata?: Json
           owner_id?: string
-          session_id?: string | null
-          status?: Database["public"]["Enums"]["conversation_status"]
-          unread_count?: number
+          session_open?: boolean
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "conversations_contact_id_fkey"
             columns: ["contact_id"]
+            isOneToOne: true
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_logs: {
+        Row: {
+          contact_id: string
+          content: string | null
+          created_at: string
+          direction: string
+          id: string
+          message_type: string
+          owner_id: string
+          template_name: string | null
+          whatsable_response: Json | null
+        }
+        Insert: {
+          contact_id: string
+          content?: string | null
+          created_at?: string
+          direction: string
+          id?: string
+          message_type?: string
+          owner_id: string
+          template_name?: string | null
+          whatsable_response?: Json | null
+        }
+        Update: {
+          contact_id?: string
+          content?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          message_type?: string
+          owner_id?: string
+          template_name?: string | null
+          whatsable_response?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_logs_contact_id_fkey"
+            columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "conversations_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "whatsapp_sessions"
-            referencedColumns: ["id"]
-          },
         ]
-      }
-      messages: {
-        Row: {
-          body: string | null
-          conversation_id: string
-          created_at: string
-          direction: Database["public"]["Enums"]["message_direction"]
-          id: string
-          is_ai: boolean
-          kind: Database["public"]["Enums"]["message_kind"]
-          media_url: string | null
-          owner_id: string
-          sent_by: string | null
-          status: Database["public"]["Enums"]["message_status"]
-          waha_id: string | null
-        }
-        Insert: {
-          body?: string | null
-          conversation_id: string
-          created_at?: string
-          direction: Database["public"]["Enums"]["message_direction"]
-          id?: string
-          is_ai?: boolean
-          kind?: Database["public"]["Enums"]["message_kind"]
-          media_url?: string | null
-          owner_id: string
-          sent_by?: string | null
-          status?: Database["public"]["Enums"]["message_status"]
-          waha_id?: string | null
-        }
-        Update: {
-          body?: string | null
-          conversation_id?: string
-          created_at?: string
-          direction?: Database["public"]["Enums"]["message_direction"]
-          id?: string
-          is_ai?: boolean
-          kind?: Database["public"]["Enums"]["message_kind"]
-          media_url?: string | null
-          owner_id?: string
-          sent_by?: string | null
-          status?: Database["public"]["Enums"]["message_status"]
-          waha_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      plan_catalog: {
-        Row: {
-          created_at: string
-          currency: string
-          description: string | null
-          features: Json
-          highlight: boolean
-          id: string
-          is_active: boolean
-          name: string
-          price_cents: number
-          sort_order: number
-          stripe_price_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          highlight?: boolean
-          id: string
-          is_active?: boolean
-          name: string
-          price_cents?: number
-          sort_order?: number
-          stripe_price_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          currency?: string
-          description?: string | null
-          features?: Json
-          highlight?: boolean
-          id?: string
-          is_active?: boolean
-          name?: string
-          price_cents?: number
-          sort_order?: number
-          stripe_price_id?: string | null
-          updated_at?: string
-        }
-        Relationships: []
       }
       profiles: {
         Row: {
@@ -412,223 +275,94 @@ export type Database = {
         }
         Relationships: []
       }
-      subscriptions: {
+      schedule_settings: {
         Row: {
-          amount_cents: number | null
-          created_at: string
-          current_period_end: string | null
-          id: string
-          plan: Database["public"]["Enums"]["plan_tier"]
-          status: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount_cents?: number | null
-          created_at?: string
-          current_period_end?: string | null
-          id?: string
-          plan?: Database["public"]["Enums"]["plan_tier"]
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount_cents?: number | null
-          created_at?: string
-          current_period_end?: string | null
-          id?: string
-          plan?: Database["public"]["Enums"]["plan_tier"]
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      team_members: {
-        Row: {
-          accepted_at: string | null
-          email: string
-          id: string
-          invited_at: string
-          member_user_id: string | null
-          name: string | null
-          owner_id: string
-          role: string
-        }
-        Insert: {
-          accepted_at?: string | null
-          email: string
-          id?: string
-          invited_at?: string
-          member_user_id?: string | null
-          name?: string | null
-          owner_id: string
-          role?: string
-        }
-        Update: {
-          accepted_at?: string | null
-          email?: string
-          id?: string
-          invited_at?: string
-          member_user_id?: string | null
-          name?: string | null
-          owner_id?: string
-          role?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      waha_config: {
-        Row: {
-          api_key: string | null
-          base_url: string | null
+          appointment_duration_minutes: number
+          buffer_minutes: number
           created_at: string
           id: string
           owner_id: string
+          timezone: string
           updated_at: string
         }
         Insert: {
-          api_key?: string | null
-          base_url?: string | null
+          appointment_duration_minutes?: number
+          buffer_minutes?: number
           created_at?: string
           id?: string
           owner_id: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
-          api_key?: string | null
-          base_url?: string | null
+          appointment_duration_minutes?: number
+          buffer_minutes?: number
           created_at?: string
           id?: string
           owner_id?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []
       }
-      waha_error_log: {
+      working_hours: {
         Row: {
           created_at: string
-          endpoint: string
-          http_status: number | null
+          day_of_week: number
+          end_time: string
           id: string
-          key_length: number | null
-          key_source: string | null
-          message: string | null
-          owner_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          endpoint: string
-          http_status?: number | null
-          id?: string
-          key_length?: number | null
-          key_source?: string | null
-          message?: string | null
-          owner_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          endpoint?: string
-          http_status?: number | null
-          id?: string
-          key_length?: number | null
-          key_source?: string | null
-          message?: string | null
-          owner_id?: string | null
-        }
-        Relationships: []
-      }
-      whatsapp_sessions: {
-        Row: {
-          created_at: string
-          id: string
-          last_status_at: string
-          name: string
+          is_enabled: boolean
           owner_id: string
-          phone_number: string | null
-          qr_code: string | null
-          status: Database["public"]["Enums"]["waha_status"]
+          schedule_id: string
+          start_time: string
           updated_at: string
-          webhook_secret: string | null
         }
         Insert: {
           created_at?: string
+          day_of_week: number
+          end_time?: string
           id?: string
-          last_status_at?: string
-          name?: string
+          is_enabled?: boolean
           owner_id: string
-          phone_number?: string | null
-          qr_code?: string | null
-          status?: Database["public"]["Enums"]["waha_status"]
+          schedule_id: string
+          start_time?: string
           updated_at?: string
-          webhook_secret?: string | null
         }
         Update: {
           created_at?: string
+          day_of_week?: number
+          end_time?: string
           id?: string
-          last_status_at?: string
-          name?: string
+          is_enabled?: boolean
           owner_id?: string
-          phone_number?: string | null
-          qr_code?: string | null
-          status?: Database["public"]["Enums"]["waha_status"]
+          schedule_id?: string
+          start_time?: string
           updated_at?: string
-          webhook_secret?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "working_hours_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedule_settings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      admin_set_user_plan: {
-        Args: {
-          _period_end?: string
-          _plan: Database["public"]["Enums"]["plan_tier"]
-          _status?: Database["public"]["Enums"]["subscription_status"]
-          _user_id: string
-        }
-        Returns: undefined
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       ai_provider: "lovable" | "openai" | "gemini"
-      app_role: "admin" | "manager" | "partner" | "user"
+      appointment_status:
+        | "PENDING_CONFIRMATION"
+        | "CONFIRMED"
+        | "CANCELLED"
+        | "RESCHEDULE_REQUESTED"
       automation_trigger:
         | "keyword"
         | "first_message"
@@ -655,13 +389,6 @@ export type Database = {
         | "template"
         | "system"
       message_status: "queued" | "sent" | "delivered" | "read" | "failed"
-      plan_tier: "trial" | "starter" | "pro" | "business"
-      subscription_status:
-        | "trialing"
-        | "active"
-        | "past_due"
-        | "canceled"
-        | "incomplete"
       waha_status:
         | "disconnected"
         | "connecting"
@@ -796,7 +523,12 @@ export const Constants = {
   public: {
     Enums: {
       ai_provider: ["lovable", "openai", "gemini"],
-      app_role: ["admin", "manager", "partner", "user"],
+      appointment_status: [
+        "PENDING_CONFIRMATION",
+        "CONFIRMED",
+        "CANCELLED",
+        "RESCHEDULE_REQUESTED",
+      ],
       automation_trigger: [
         "keyword",
         "first_message",
@@ -826,14 +558,6 @@ export const Constants = {
         "system",
       ],
       message_status: ["queued", "sent", "delivered", "read", "failed"],
-      plan_tier: ["trial", "starter", "pro", "business"],
-      subscription_status: [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "incomplete",
-      ],
       waha_status: [
         "disconnected",
         "connecting",

@@ -4,12 +4,12 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare, Users, Workflow, Send, TrendingUp } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { TrialBanner } from "@/components/trial-banner";
+import { Calendar, Users, CheckCircle2, MessageSquare } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — LocalBoost" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Agenda" }] }),
   component: DashboardPage,
 });
 
@@ -19,46 +19,42 @@ function DashboardPage() {
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-14 items-center gap-3 border-b px-4">
-          <SidebarTrigger />
-          <h1 className="font-semibold">Visão geral</h1>
+          <SidebarTrigger /><h1 className="font-semibold">Visão geral</h1>
         </header>
-        <div className="p-6 space-y-6">
-          <TrialBanner />
-          <DashboardContent />
-        </div>
+        <div className="p-6 space-y-6"><DashboardContent /></div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
 
 function DashboardContent() {
-  const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+  const { data } = useQuery({
+    queryKey: ["dashboard"],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
-      // Placeholder until conversations/messages/contacts tables exist (Fase 3)
-      const { count: contactsCount } = await supabase
-        .from("profiles").select("*", { count: "exact", head: true }).eq("id", user.id);
+      const now = new Date().toISOString();
+      const in7d = new Date(Date.now() + 7 * 86400_000).toISOString();
+      const [contacts, upcoming, confirmed, msgs, next] = await Promise.all([
+        supabase.from("contacts").select("*", { count: "exact", head: true }),
+        supabase.from("appointments").select("*", { count: "exact", head: true }).gte("start_time", now).in("status", ["PENDING_CONFIRMATION", "CONFIRMED"]),
+        supabase.from("appointments").select("*", { count: "exact", head: true }).eq("status", "CONFIRMED").gte("start_time", now).lte("start_time", in7d),
+        supabase.from("message_logs").select("*", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 86400_000).toISOString()),
+        supabase.from("appointments").select("id, start_time, end_time, status, subject, contact:contacts(name, phone_number)").gte("start_time", now).order("start_time").limit(8),
+      ]);
       return {
-        conversations: 0,
-        messagesToday: 0,
-        newContacts: contactsCount ?? 0,
-        activeAutomations: 0,
+        contacts: contacts.count ?? 0,
+        upcoming: upcoming.count ?? 0,
+        confirmed: confirmed.count ?? 0,
+        msgs24h: msgs.count ?? 0,
+        next: (next.data ?? []) as Array<{ id: string; start_time: string; end_time: string; status: string; subject: string | null; contact: { name: string | null; phone_number: string } | null }>,
       };
     },
   });
 
-  const weekData = [
-    { day: "Seg", msgs: 0 }, { day: "Ter", msgs: 0 }, { day: "Qua", msgs: 0 },
-    { day: "Qui", msgs: 0 }, { day: "Sex", msgs: 0 }, { day: "Sáb", msgs: 0 }, { day: "Dom", msgs: 0 },
-  ];
-
   const cards = [
-    { label: "Conversas abertas", value: stats?.conversations ?? 0, icon: MessageSquare },
-    { label: "Mensagens hoje", value: stats?.messagesToday ?? 0, icon: Send },
-    { label: "Novos contatos", value: stats?.newContacts ?? 0, icon: Users },
-    { label: "Automações ativas", value: stats?.activeAutomations ?? 0, icon: Workflow },
+    { label: "Agendamentos futuros", value: data?.upcoming ?? 0, icon: Calendar },
+    { label: "Confirmados (7 dias)", value: data?.confirmed ?? 0, icon: CheckCircle2 },
+    { label: "Contatos", value: data?.contacts ?? 0, icon: Users },
+    { label: "Mensagens 24h", value: data?.msgs24h ?? 0, icon: MessageSquare },
   ];
 
   return (
@@ -77,24 +73,25 @@ function DashboardContent() {
         ))}
       </div>
       <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base"><TrendingUp className="h-4 w-4" /> Mensagens por dia</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">Próximos agendamentos</CardTitle></CardHeader>
         <CardContent>
-          <div className="h-64 w-full">
-            <ResponsiveContainer>
-              <BarChart data={weekData}>
-                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                <XAxis dataKey="day" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="msgs" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Conecte seu WhatsApp para ver dados reais em tempo real.
-          </p>
+          {!data?.next.length ? (
+            <p className="text-sm text-muted-foreground">Nenhum agendamento futuro.</p>
+          ) : (
+            <ul className="divide-y">
+              {data.next.map((a) => (
+                <li key={a.id} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="font-medium">{a.contact?.name ?? a.contact?.phone_number ?? "—"}</p>
+                    <p className="text-xs text-muted-foreground">{a.subject ?? "Consulta"} · {a.status}</p>
+                  </div>
+                  <div className="text-sm text-right">
+                    {format(new Date(a.start_time), "EEE dd/MM 'às' HH:mm", { locale: ptBR })}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </>

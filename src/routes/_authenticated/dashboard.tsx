@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Users, CheckCircle2, MessageSquare } from "lucide-react";
+import { TalkToAgentButton } from "@/components/talk-to-agent-button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -20,6 +21,7 @@ function DashboardPage() {
       <SidebarInset>
         <header className="flex h-14 items-center gap-3 border-b px-4">
           <SidebarTrigger /><h1 className="font-semibold">Visão geral</h1>
+          <div className="ml-auto"><TalkToAgentButton /></div>
         </header>
         <div className="p-6 space-y-6"><DashboardContent /></div>
       </SidebarInset>

@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { TalkToAgentButton } from "@/components/talk-to-agent-button";
 import { Calendar, Bot, MessageSquare, Clock, Check, ArrowRight, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -54,6 +55,7 @@ function Landing() {
             <Button asChild size="lg" className="shadow-glow text-base h-12 px-8">
               <Link to="/auth">Criar conta <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
+            <TalkToAgentButton label="Falar com o agente IA LocalBoost" />
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-muted-foreground">
             <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Sem configuração técnica</span>

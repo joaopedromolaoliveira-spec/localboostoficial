@@ -14,25 +14,12 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedConversationsRouteImport } from './routes/_authenticated/conversations'
 import { Route as AuthenticatedContactsRouteImport } from './routes/_authenticated/contacts'
-import { Route as AuthenticatedCampaignsRouteImport } from './routes/_authenticated/campaigns'
-import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
-import { Route as AuthenticatedAutomationsRouteImport } from './routes/_authenticated/automations'
-import { Route as AuthenticatedAiAssistantRouteImport } from './routes/_authenticated/ai-assistant'
-import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as ApiPublicWebhooksWahaRouteImport } from './routes/api/public/webhooks/waha'
-import { Route as ApiPublicWahaStopRouteImport } from './routes/api/public/waha/stop'
-import { Route as ApiPublicWahaStartRouteImport } from './routes/api/public/waha/start'
-import { Route as ApiPublicWahaSendRouteImport } from './routes/api/public/waha/send'
-import { Route as ApiPublicWahaPairRouteImport } from './routes/api/public/waha/pair'
-import { Route as ApiPublicWahaHealthRouteImport } from './routes/api/public/waha/health'
-import { Route as ApiPublicCampaignsSendRouteImport } from './routes/api/public/campaigns/send'
-import { Route as ApiPublicAiTestRouteImport } from './routes/api/public/ai/test'
+import { Route as AuthenticatedAppointmentsRouteImport } from './routes/_authenticated/appointments'
+import { Route as ApiPublicWebhooksWhatsableRouteImport } from './routes/api/public/webhooks/whatsable'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -58,19 +45,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
-  id: '/whatsapp',
-  path: '/whatsapp',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -89,123 +66,42 @@ const AuthenticatedContactsRoute = AuthenticatedContactsRouteImport.update({
   path: '/contacts',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedCampaignsRoute = AuthenticatedCampaignsRouteImport.update({
-  id: '/campaigns',
-  path: '/campaigns',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
-  id: '/billing',
-  path: '/billing',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAutomationsRoute =
-  AuthenticatedAutomationsRouteImport.update({
-    id: '/automations',
-    path: '/automations',
+const AuthenticatedAppointmentsRoute =
+  AuthenticatedAppointmentsRouteImport.update({
+    id: '/appointments',
+    path: '/appointments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAiAssistantRoute =
-  AuthenticatedAiAssistantRouteImport.update({
-    id: '/ai-assistant',
-    path: '/ai-assistant',
-    getParentRoute: () => AuthenticatedRouteRoute,
+const ApiPublicWebhooksWhatsableRoute =
+  ApiPublicWebhooksWhatsableRouteImport.update({
+    id: '/api/public/webhooks/whatsable',
+    path: '/api/public/webhooks/whatsable',
+    getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const ApiPublicWebhooksWahaRoute = ApiPublicWebhooksWahaRouteImport.update({
-  id: '/api/public/webhooks/waha',
-  path: '/api/public/webhooks/waha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWahaStopRoute = ApiPublicWahaStopRouteImport.update({
-  id: '/api/public/waha/stop',
-  path: '/api/public/waha/stop',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWahaStartRoute = ApiPublicWahaStartRouteImport.update({
-  id: '/api/public/waha/start',
-  path: '/api/public/waha/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWahaSendRoute = ApiPublicWahaSendRouteImport.update({
-  id: '/api/public/waha/send',
-  path: '/api/public/waha/send',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWahaPairRoute = ApiPublicWahaPairRouteImport.update({
-  id: '/api/public/waha/pair',
-  path: '/api/public/waha/pair',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicWahaHealthRoute = ApiPublicWahaHealthRouteImport.update({
-  id: '/api/public/waha/health',
-  path: '/api/public/waha/health',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCampaignsSendRoute = ApiPublicCampaignsSendRouteImport.update({
-  id: '/api/public/campaigns/send',
-  path: '/api/public/campaigns/send',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicAiTestRoute = ApiPublicAiTestRouteImport.update({
-  id: '/api/public/ai/test',
-  path: '/api/public/ai/test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/ai-assistant': typeof AuthenticatedAiAssistantRoute
-  '/automations': typeof AuthenticatedAutomationsRoute
-  '/billing': typeof AuthenticatedBillingRoute
-  '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/appointments': typeof AuthenticatedAppointmentsRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
-  '/api/public/ai/test': typeof ApiPublicAiTestRoute
-  '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
-  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
-  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
-  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
-  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
-  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
-  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
+  '/api/public/webhooks/whatsable': typeof ApiPublicWebhooksWhatsableRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/admin': typeof AuthenticatedAdminRoute
-  '/ai-assistant': typeof AuthenticatedAiAssistantRoute
-  '/automations': typeof AuthenticatedAutomationsRoute
-  '/billing': typeof AuthenticatedBillingRoute
-  '/campaigns': typeof AuthenticatedCampaignsRoute
+  '/appointments': typeof AuthenticatedAppointmentsRoute
   '/contacts': typeof AuthenticatedContactsRoute
   '/conversations': typeof AuthenticatedConversationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/reports': typeof AuthenticatedReportsRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/whatsapp': typeof AuthenticatedWhatsappRoute
-  '/api/public/ai/test': typeof ApiPublicAiTestRoute
-  '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
-  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
-  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
-  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
-  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
-  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
-  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
+  '/api/public/webhooks/whatsable': typeof ApiPublicWebhooksWhatsableRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -214,25 +110,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/ai-assistant': typeof AuthenticatedAiAssistantRoute
-  '/_authenticated/automations': typeof AuthenticatedAutomationsRoute
-  '/_authenticated/billing': typeof AuthenticatedBillingRoute
-  '/_authenticated/campaigns': typeof AuthenticatedCampaignsRoute
+  '/_authenticated/appointments': typeof AuthenticatedAppointmentsRoute
   '/_authenticated/contacts': typeof AuthenticatedContactsRoute
   '/_authenticated/conversations': typeof AuthenticatedConversationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
-  '/api/public/ai/test': typeof ApiPublicAiTestRoute
-  '/api/public/campaigns/send': typeof ApiPublicCampaignsSendRoute
-  '/api/public/waha/health': typeof ApiPublicWahaHealthRoute
-  '/api/public/waha/pair': typeof ApiPublicWahaPairRoute
-  '/api/public/waha/send': typeof ApiPublicWahaSendRoute
-  '/api/public/waha/start': typeof ApiPublicWahaStartRoute
-  '/api/public/waha/stop': typeof ApiPublicWahaStopRoute
-  '/api/public/webhooks/waha': typeof ApiPublicWebhooksWahaRoute
+  '/api/public/webhooks/whatsable': typeof ApiPublicWebhooksWhatsableRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -241,50 +124,24 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/admin'
-    | '/ai-assistant'
-    | '/automations'
-    | '/billing'
-    | '/campaigns'
+    | '/appointments'
     | '/contacts'
     | '/conversations'
     | '/dashboard'
-    | '/reports'
     | '/settings'
-    | '/whatsapp'
-    | '/api/public/ai/test'
-    | '/api/public/campaigns/send'
-    | '/api/public/waha/health'
-    | '/api/public/waha/pair'
-    | '/api/public/waha/send'
-    | '/api/public/waha/start'
-    | '/api/public/waha/stop'
-    | '/api/public/webhooks/waha'
+    | '/api/public/webhooks/whatsable'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/admin'
-    | '/ai-assistant'
-    | '/automations'
-    | '/billing'
-    | '/campaigns'
+    | '/appointments'
     | '/contacts'
     | '/conversations'
     | '/dashboard'
-    | '/reports'
     | '/settings'
-    | '/whatsapp'
-    | '/api/public/ai/test'
-    | '/api/public/campaigns/send'
-    | '/api/public/waha/health'
-    | '/api/public/waha/pair'
-    | '/api/public/waha/send'
-    | '/api/public/waha/start'
-    | '/api/public/waha/stop'
-    | '/api/public/webhooks/waha'
+    | '/api/public/webhooks/whatsable'
   id:
     | '__root__'
     | '/'
@@ -292,25 +149,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/reset-password'
-    | '/_authenticated/admin'
-    | '/_authenticated/ai-assistant'
-    | '/_authenticated/automations'
-    | '/_authenticated/billing'
-    | '/_authenticated/campaigns'
+    | '/_authenticated/appointments'
     | '/_authenticated/contacts'
     | '/_authenticated/conversations'
     | '/_authenticated/dashboard'
-    | '/_authenticated/reports'
     | '/_authenticated/settings'
-    | '/_authenticated/whatsapp'
-    | '/api/public/ai/test'
-    | '/api/public/campaigns/send'
-    | '/api/public/waha/health'
-    | '/api/public/waha/pair'
-    | '/api/public/waha/send'
-    | '/api/public/waha/start'
-    | '/api/public/waha/stop'
-    | '/api/public/webhooks/waha'
+    | '/api/public/webhooks/whatsable'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -319,14 +163,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ApiPublicAiTestRoute: typeof ApiPublicAiTestRoute
-  ApiPublicCampaignsSendRoute: typeof ApiPublicCampaignsSendRoute
-  ApiPublicWahaHealthRoute: typeof ApiPublicWahaHealthRoute
-  ApiPublicWahaPairRoute: typeof ApiPublicWahaPairRoute
-  ApiPublicWahaSendRoute: typeof ApiPublicWahaSendRoute
-  ApiPublicWahaStartRoute: typeof ApiPublicWahaStartRoute
-  ApiPublicWahaStopRoute: typeof ApiPublicWahaStopRoute
-  ApiPublicWebhooksWahaRoute: typeof ApiPublicWebhooksWahaRoute
+  ApiPublicWebhooksWhatsableRoute: typeof ApiPublicWebhooksWhatsableRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -366,25 +203,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/whatsapp': {
-      id: '/_authenticated/whatsapp'
-      path: '/whatsapp'
-      fullPath: '/whatsapp'
-      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/reports': {
-      id: '/_authenticated/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof AuthenticatedReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -408,126 +231,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContactsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/campaigns': {
-      id: '/_authenticated/campaigns'
-      path: '/campaigns'
-      fullPath: '/campaigns'
-      preLoaderRoute: typeof AuthenticatedCampaignsRouteImport
+    '/_authenticated/appointments': {
+      id: '/_authenticated/appointments'
+      path: '/appointments'
+      fullPath: '/appointments'
+      preLoaderRoute: typeof AuthenticatedAppointmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/billing': {
-      id: '/_authenticated/billing'
-      path: '/billing'
-      fullPath: '/billing'
-      preLoaderRoute: typeof AuthenticatedBillingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/automations': {
-      id: '/_authenticated/automations'
-      path: '/automations'
-      fullPath: '/automations'
-      preLoaderRoute: typeof AuthenticatedAutomationsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/ai-assistant': {
-      id: '/_authenticated/ai-assistant'
-      path: '/ai-assistant'
-      fullPath: '/ai-assistant'
-      preLoaderRoute: typeof AuthenticatedAiAssistantRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/api/public/webhooks/waha': {
-      id: '/api/public/webhooks/waha'
-      path: '/api/public/webhooks/waha'
-      fullPath: '/api/public/webhooks/waha'
-      preLoaderRoute: typeof ApiPublicWebhooksWahaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/waha/stop': {
-      id: '/api/public/waha/stop'
-      path: '/api/public/waha/stop'
-      fullPath: '/api/public/waha/stop'
-      preLoaderRoute: typeof ApiPublicWahaStopRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/waha/start': {
-      id: '/api/public/waha/start'
-      path: '/api/public/waha/start'
-      fullPath: '/api/public/waha/start'
-      preLoaderRoute: typeof ApiPublicWahaStartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/waha/send': {
-      id: '/api/public/waha/send'
-      path: '/api/public/waha/send'
-      fullPath: '/api/public/waha/send'
-      preLoaderRoute: typeof ApiPublicWahaSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/waha/pair': {
-      id: '/api/public/waha/pair'
-      path: '/api/public/waha/pair'
-      fullPath: '/api/public/waha/pair'
-      preLoaderRoute: typeof ApiPublicWahaPairRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/waha/health': {
-      id: '/api/public/waha/health'
-      path: '/api/public/waha/health'
-      fullPath: '/api/public/waha/health'
-      preLoaderRoute: typeof ApiPublicWahaHealthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/campaigns/send': {
-      id: '/api/public/campaigns/send'
-      path: '/api/public/campaigns/send'
-      fullPath: '/api/public/campaigns/send'
-      preLoaderRoute: typeof ApiPublicCampaignsSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/ai/test': {
-      id: '/api/public/ai/test'
-      path: '/api/public/ai/test'
-      fullPath: '/api/public/ai/test'
-      preLoaderRoute: typeof ApiPublicAiTestRouteImport
+    '/api/public/webhooks/whatsable': {
+      id: '/api/public/webhooks/whatsable'
+      path: '/api/public/webhooks/whatsable'
+      fullPath: '/api/public/webhooks/whatsable'
+      preLoaderRoute: typeof ApiPublicWebhooksWhatsableRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedAiAssistantRoute: typeof AuthenticatedAiAssistantRoute
-  AuthenticatedAutomationsRoute: typeof AuthenticatedAutomationsRoute
-  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
-  AuthenticatedCampaignsRoute: typeof AuthenticatedCampaignsRoute
+  AuthenticatedAppointmentsRoute: typeof AuthenticatedAppointmentsRoute
   AuthenticatedContactsRoute: typeof AuthenticatedContactsRoute
   AuthenticatedConversationsRoute: typeof AuthenticatedConversationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedAiAssistantRoute: AuthenticatedAiAssistantRoute,
-  AuthenticatedAutomationsRoute: AuthenticatedAutomationsRoute,
-  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
-  AuthenticatedCampaignsRoute: AuthenticatedCampaignsRoute,
+  AuthenticatedAppointmentsRoute: AuthenticatedAppointmentsRoute,
   AuthenticatedContactsRoute: AuthenticatedContactsRoute,
   AuthenticatedConversationsRoute: AuthenticatedConversationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -539,14 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ApiPublicAiTestRoute: ApiPublicAiTestRoute,
-  ApiPublicCampaignsSendRoute: ApiPublicCampaignsSendRoute,
-  ApiPublicWahaHealthRoute: ApiPublicWahaHealthRoute,
-  ApiPublicWahaPairRoute: ApiPublicWahaPairRoute,
-  ApiPublicWahaSendRoute: ApiPublicWahaSendRoute,
-  ApiPublicWahaStartRoute: ApiPublicWahaStartRoute,
-  ApiPublicWahaStopRoute: ApiPublicWahaStopRoute,
-  ApiPublicWebhooksWahaRoute: ApiPublicWebhooksWahaRoute,
+  ApiPublicWebhooksWhatsableRoute: ApiPublicWebhooksWhatsableRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

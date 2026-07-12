@@ -3,7 +3,7 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, MessageCircle, Zap, MessageSquare, Users } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,8 +12,13 @@ import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const NAV = [
-  { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
-  { to: "/settings", label: "Configurações", icon: Settings },
+  { to: "/_authenticated/dashboard", label: "Visão geral", icon: LayoutDashboard },
+  { to: "/_authenticated/conversations", label: "Conversas", icon: MessageSquare },
+  { to: "/_authenticated/contacts", label: "Contatos", icon: Users },
+  { to: "/_authenticated/appointments", label: "Agendamentos", icon: MessageCircle },
+  { to: "/_authenticated/whatsapp-connect", label: "Conectar WhatsApp", icon: MessageCircle },
+  { to: "/_authenticated/settings-ai", label: "Configurar IA", icon: Zap },
+  { to: "/_authenticated/settings", label: "Configurações", icon: Settings },
 ] as const;
 
 export function AppSidebar() {
@@ -40,7 +45,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {NAV.map((item) => (
                 <SidebarMenuItem key={item.to}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.to}>
+                  <SidebarMenuButton asChild isActive={location.pathname.includes(item.to)}>
                     <Link to={item.to}><item.icon className="h-4 w-4" /><span>{item.label}</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

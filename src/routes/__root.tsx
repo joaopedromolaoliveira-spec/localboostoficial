@@ -64,10 +64,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Agenda IA — Agendamento inteligente por WhatsApp" },
-      { name: "description", content: "Um agente de IA no WhatsApp que agenda, confirma, cancela e reagenda horários pelos seus clientes." },
+      { title: "LocalBoost — Atendimento com IA" },
+      { name: "description", content: "Atendimento inteligente 24/7 com um agente de IA integrado ao seu site." },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
+    scripts: [
+      { children: `window.chtlConfig = { chatbotId: "6316753392" };` },
+      { src: "https://chatling.ai/js/embed.js", async: true, id: "chatling-embed-script", type: "text/javascript", "data-id": "6316753392" } as unknown as { src: string },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

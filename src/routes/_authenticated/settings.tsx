@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Loader2, Webhook, Copy } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -18,7 +17,6 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
 });
 
-const DAY_NAMES = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 function SettingsPage() {
   return (
@@ -29,12 +27,26 @@ function SettingsPage() {
           <SidebarTrigger /><h1 className="font-semibold">Configurações</h1>
         </header>
         <div className="p-6 space-y-6 max-w-3xl">
+          <ChatlingSection />
           <BotSection />
-          <ScheduleSection />
-          <WebhookSection />
         </div>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function ChatlingSection() {
+  return (
+    <Card>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Webhook className="h-4 w-4" /> Widget de atendimento (Chatling)</CardTitle></CardHeader>
+      <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <p>O widget de chat da LocalBoost aparece automaticamente em todas as páginas do app.</p>
+        <p>Para editar respostas, base de conhecimento e aparência, acesse o painel do Chatling.</p>
+        <Button asChild variant="outline" size="sm" className="mt-2">
+          <a href="https://app.chatling.ai/" target="_blank" rel="noopener noreferrer">Abrir Chatling <Copy className="ml-2 h-3.5 w-3.5" /></a>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -71,93 +83,3 @@ function BotSection() {
   );
 }
 
-function ScheduleSection() {
-  const qc = useQueryClient();
-  const { data: schedule } = useQuery({
-    queryKey: ["schedule"],
-    queryFn: async () => (await supabase.from("schedule_settings").select("*").maybeSingle()).data,
-  });
-  const { data: hours = [] } = useQuery({
-    queryKey: ["hours"],
-    queryFn: async () => (await supabase.from("working_hours").select("*").order("day_of_week")).data ?? [],
-  });
-  const [duration, setDuration] = useState(60);
-  const [buffer, setBuffer] = useState(15);
-  const [tz, setTz] = useState("Europe/Madrid");
-  useEffect(() => {
-    if (schedule) {
-      setDuration(schedule.appointment_duration_minutes);
-      setBuffer(schedule.buffer_minutes);
-      setTz(schedule.timezone);
-    }
-  }, [schedule]);
-
-  const saveSched = useMutation({
-    mutationFn: async () => {
-      if (!schedule) return;
-      const { error } = await supabase.from("schedule_settings").update({
-        appointment_duration_minutes: duration, buffer_minutes: buffer, timezone: tz,
-      }).eq("id", schedule.id);
-      if (error) throw error;
-    },
-    onSuccess: () => { toast.success("Agenda salva"); qc.invalidateQueries({ queryKey: ["schedule"] }); },
-  });
-
-  const saveHour = useMutation({
-    mutationFn: async (h: { id: string; is_enabled: boolean; start_time: string; end_time: string }) => {
-      const { error } = await supabase.from("working_hours").update({
-        is_enabled: h.is_enabled, start_time: h.start_time, end_time: h.end_time,
-      }).eq("id", h.id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["hours"] }),
-  });
-
-  return (
-    <Card><CardHeader><CardTitle>Agenda e horários</CardTitle></CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div><Label>Duração (min)</Label><Input type="number" value={duration} onChange={(e) => setDuration(Number(e.target.value))} /></div>
-          <div><Label>Buffer (min)</Label><Input type="number" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} /></div>
-          <div><Label>Fuso</Label><Input value={tz} onChange={(e) => setTz(e.target.value)} /></div>
-        </div>
-        <Button onClick={() => saveSched.mutate()} disabled={saveSched.isPending}>Salvar agenda</Button>
-        <div className="border-t pt-4 space-y-2">
-          {hours.map((h) => (
-            <div key={h.id} className="flex items-center gap-3">
-              <div className="w-24 text-sm font-medium">{DAY_NAMES[h.day_of_week]}</div>
-              <Switch checked={h.is_enabled} onCheckedChange={(v) => saveHour.mutate({ ...h, is_enabled: v })} />
-              <Input type="time" defaultValue={h.start_time.slice(0, 5)} className="w-32"
-                onBlur={(e) => saveHour.mutate({ ...h, start_time: e.target.value })} />
-              <span>—</span>
-              <Input type="time" defaultValue={h.end_time.slice(0, 5)} className="w-32"
-                onBlur={(e) => saveHour.mutate({ ...h, end_time: e.target.value })} />
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function WebhookSection() {
-  const { data: user } = useQuery({
-    queryKey: ["me-id"],
-    queryFn: async () => (await supabase.auth.getUser()).data.user,
-  });
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const url = user ? `${origin}/api/public/webhooks/whatsable?owner=${user.id}` : "";
-  return (
-    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Webhook className="h-4 w-4" /> Webhook WhatsAble</CardTitle></CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">Configure este URL como webhook de mensagens no painel WhatsAble:</p>
-        <div className="flex gap-2">
-          <Input readOnly value={url} className="font-mono text-xs" />
-          <Button variant="outline" size="icon" onClick={() => { navigator.clipboard.writeText(url); toast.success("Copiado"); }}>
-            <Copy className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}

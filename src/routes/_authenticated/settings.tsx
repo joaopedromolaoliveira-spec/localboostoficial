@@ -29,12 +29,26 @@ function SettingsPage() {
           <SidebarTrigger /><h1 className="font-semibold">Configurações</h1>
         </header>
         <div className="p-6 space-y-6 max-w-3xl">
+          <ChatlingSection />
           <BotSection />
-          <ScheduleSection />
-          <WebhookSection />
         </div>
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+function ChatlingSection() {
+  return (
+    <Card>
+      <CardHeader><CardTitle className="flex items-center gap-2"><Webhook className="h-4 w-4" /> Widget de atendimento (Chatling)</CardTitle></CardHeader>
+      <CardContent className="space-y-2 text-sm text-muted-foreground">
+        <p>O widget de chat da LocalBoost aparece automaticamente em todas as páginas do app.</p>
+        <p>Para editar respostas, base de conhecimento e aparência, acesse o painel do Chatling.</p>
+        <Button asChild variant="outline" size="sm" className="mt-2">
+          <a href="https://app.chatling.ai/" target="_blank" rel="noopener noreferrer">Abrir Chatling <Copy className="ml-2 h-3.5 w-3.5" /></a>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
 

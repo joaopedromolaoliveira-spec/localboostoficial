@@ -3,20 +3,16 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Calendar, Users, MessageSquare, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { TalkToAgentButton } from "@/components/talk-to-agent-button";
 
 const NAV = [
   { to: "/dashboard", label: "Visão geral", icon: LayoutDashboard },
-  { to: "/appointments", label: "Agendamentos", icon: Calendar },
-  { to: "/contacts", label: "Contatos", icon: Users },
-  { to: "/conversations", label: "Conversas", icon: MessageSquare },
   { to: "/settings", label: "Configurações", icon: Settings },
 ] as const;
 
@@ -53,8 +49,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-3 space-y-2">
-        <TalkToAgentButton full label="Agente IA LocalBoost" />
+      <SidebarFooter className="p-3">
         <div className="flex items-center justify-between gap-2">
           <ThemeToggle />
           <Button variant="ghost" size="sm" onClick={handleSignOut} className="gap-2">

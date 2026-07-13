@@ -16,7 +16,8 @@ const NAV = [
   { to: "/_authenticated/conversations", label: "Conversas", icon: MessageSquare },
   { to: "/_authenticated/contacts", label: "Contatos", icon: Users },
   { to: "/_authenticated/appointments", label: "Agendamentos", icon: MessageCircle },
-  { to: "/_authenticated/whatsapp-connect", label: "Conectar WhatsApp", icon: MessageCircle },
+  { to: "/_authenticated/whatsapp-sessions", label: "WhatsApp Multi-Sessão", icon: MessageCircle },
+  { to: "/_authenticated/pricing", label: "Planos e Preços", icon: Zap },
   { to: "/_authenticated/settings-ai", label: "Configurar IA", icon: Zap },
   { to: "/_authenticated/settings", label: "Configurações", icon: Settings },
 ] as const;
